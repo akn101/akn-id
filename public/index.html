@@ -144,7 +144,8 @@ input::placeholder { color: var(--text-muted); }
     <!-- Redirecting -->
     <div id="view-redirect" style="display:none" class="redirect">
       <div class="spinner"></div>
-      <p>Signed in — redirecting…</p>
+      <p style="margin-top:12px">Signed in — redirecting in <span id="countdown">5</span>s</p>
+      <a href="/account.html" class="btn" style="display:inline-block;margin-top:16px;width:auto;padding:9px 20px;text-decoration:none">Manage account</a>
     </div>
 
   </div>
@@ -225,16 +226,24 @@ async function handleSignedIn(user) {
     if (status === 'rejected') { showView('rejected'); return; }
   }
 
-  // Approved — redirect or go to account
+  // Approved — redirect with countdown
   showView('redirect');
-  if (redirectTo) {
-    const token = await user.getIdToken();
-    const url = new URL(redirectTo);
-    url.searchParams.set('token', token);
-    location.href = url.toString();
-  } else {
-    location.href = '/account.html';
-  }
+  const dest = await (async () => {
+    if (redirectTo) {
+      const token = await user.getIdToken();
+      const url = new URL(redirectTo);
+      url.searchParams.set('token', token);
+      return url.toString();
+    }
+    return 'https://akn.me.uk';
+  })();
+  let n = 5;
+  const cd = document.getElementById('countdown');
+  const iv = setInterval(() => {
+    n--;
+    cd.textContent = n;
+    if (n <= 0) { clearInterval(iv); location.href = dest; }
+  }, 1000);
 }
 
 onAuthStateChanged(auth, user => { if (user) handleSignedIn(user); });
