@@ -15,23 +15,18 @@
       }
     ],
     "redirects": [
-      { "source": "/login",        "destination": "/",              "type": 301 },
-      { "source": "/signin",       "destination": "/",              "type": 301 },
-      { "source": "/sign-in",      "destination": "/",              "type": 301 },
-      { "source": "/signup",       "destination": "/",              "type": 301 },
-      { "source": "/sign-up",      "destination": "/",              "type": 301 },
-      { "source": "/register",     "destination": "/",              "type": 301 },
-      { "source": "/logout",       "destination": "/",              "type": 301 },
-      { "source": "/account",      "destination": "/account.html",  "type": 301 },
-      { "source": "/profile",      "destination": "/account.html",  "type": 301 },
-      { "source": "/me",           "destination": "/account.html",  "type": 301 },
-      { "source": "/settings",     "destination": "/account.html",  "type": 301 },
-      { "source": "/admin",        "destination": "/admin.html",    "type": 301 },
-      { "source": "/dashboard",    "destination": "/admin.html",    "type": 301 }
-    ],
-    "i18n": {
-      "root": "/public"
-    }
+      { "source": "/login",     "destination": "/",           "type": 301 },
+      { "source": "/signin",    "destination": "/",           "type": 301 },
+      { "source": "/sign-in",   "destination": "/",           "type": 301 },
+      { "source": "/signup",    "destination": "/",           "type": 301 },
+      { "source": "/sign-up",   "destination": "/",           "type": 301 },
+      { "source": "/register",  "destination": "/",           "type": 301 },
+      { "source": "/logout",    "destination": "/",           "type": 301 },
+      { "source": "/profile",   "destination": "/account",    "type": 301 },
+      { "source": "/me",        "destination": "/account",    "type": 301 },
+      { "source": "/settings",  "destination": "/account",    "type": 301 },
+      { "source": "/dashboard", "destination": "/admin",      "type": 301 }
+    ]
   },
   "firestore": {
     "rules": "firestore.rules"

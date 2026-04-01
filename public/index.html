@@ -226,17 +226,23 @@ async function handleSignedIn(user) {
     if (status === 'rejected') { showView('rejected'); return; }
   }
 
-  // Approved — redirect with countdown
+  // Approved — POST token to api.akn.me.uk to set shared .akn.me.uk cookie, then redirect clean
   showView('redirect');
-  const dest = await (async () => {
-    if (redirectTo) {
-      const token = await user.getIdToken();
-      const url = new URL(redirectTo);
-      url.searchParams.set('token', token);
-      return url.toString();
-    }
-    return 'https://akn.me.uk';
-  })();
+  const idToken = await user.getIdToken();
+  const dest = redirectTo || 'https://akn.me.uk';
+  let project = 'akn.id';
+  try {
+    const destHost = new URL(dest).hostname.split('.')[0];
+    if (['thoughts','startpage','halcyon'].includes(destHost)) project = destHost;
+  } catch {}
+  try {
+    await fetch('https://api.akn.me.uk/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ idToken, project }),
+    });
+  } catch { /* non-fatal */ }
   let n = 5;
   const cd = document.getElementById('countdown');
   const iv = setInterval(() => {
