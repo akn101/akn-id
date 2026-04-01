@@ -7,307 +7,247 @@
 <link rel="icon" href="https://akn.me.uk/favicon.ico">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
-  --bg: #0c0c14;
-  --text: rgba(255,255,255,0.85);
-  --text-muted: rgba(255,255,255,0.32);
-  --card-bg: rgba(255,255,255,0.04);
-  --card-border: rgba(255,255,255,0.08);
-  --input-bg: rgba(255,255,255,0.05);
-  --input-border: rgba(255,255,255,0.1);
-  --input-focus: rgba(167,139,250,0.45);
-  --btn-bg: rgba(167,139,250,0.15);
-  --btn-color: #a78bfa;
-  --btn-border: rgba(167,139,250,0.3);
-  --blob-op: 0.18;
+  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
+  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
+  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
+  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
+  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3); --blob-op: 0.18;
 }
-
-html, body {
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, sans-serif;
-}
-
-.blob {
-  position: fixed; border-radius: 100px;
-  filter: blur(80px); opacity: var(--blob-op);
-  z-index: 0; pointer-events: none;
-}
+html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+.blob { position: fixed; border-radius: 100px; filter: blur(80px); opacity: var(--blob-op); z-index: 0; pointer-events: none; }
 .blob-1 { background: linear-gradient(135deg,#667eea,#764ba2); top:5%; right:5%; width:380px; height:380px; animation: b1 20s ease-in-out infinite; }
 .blob-2 { background: linear-gradient(135deg,#f093fb,#f5576c); bottom:10%; left:5%; width:300px; height:300px; animation: b2 18s ease-in-out infinite 3s; }
 @keyframes b1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-25px)} }
 @keyframes b2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
-
-.page {
-  position: relative; z-index: 1;
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 24px;
-}
-
-.wordmark {
-  position: fixed; top: 28px; left: 32px;
-  display: flex; align-items: center; gap: 9px;
-  text-decoration: none; z-index: 10;
-}
+.page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+.wordmark { position: fixed; top: 28px; left: 32px; display: flex; align-items: center; gap: 9px; text-decoration: none; z-index: 10; }
 .wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
-.wordmark span {
-  font-size: 13px; font-weight: 400;
-  color: var(--text-muted); letter-spacing: 0.05em;
-}
-
-.card {
-  width: 100%; max-width: 340px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 18px; padding: 32px 28px;
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-}
-
-.card-sub {
-  font-size: 12px; color: var(--text-muted);
-  margin-bottom: 24px; letter-spacing: 0.02em;
-}
-
+.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
+.card { width: 100%; max-width: 340px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 32px 28px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.card-title { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; letter-spacing: 0.02em; }
 .field { margin-bottom: 12px; }
-
-input[type="email"],
-input[type="password"],
-input[type="tel"] {
-  width: 100%;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 9px; padding: 10px 13px;
-  color: var(--text); font-size: 13px; font-family: inherit;
-  outline: none; transition: border-color 0.2s;
+input[type="email"], input[type="password"], input[type="tel"], input[type="text"] {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--input-border);
+  border-radius: 9px; padding: 10px 13px; color: var(--text); font-size: 13px;
+  font-family: inherit; outline: none; transition: border-color 0.2s;
 }
 input:focus { border-color: var(--input-focus); }
 input::placeholder { color: var(--text-muted); }
-
-.btn {
-  width: 100%; background: var(--btn-bg); color: var(--btn-color);
-  border: 1px solid var(--btn-border); border-radius: 9px;
-  padding: 10px; font-size: 13px; font-family: inherit;
-  cursor: pointer; margin-top: 4px; transition: background 0.2s;
-  letter-spacing: 0.02em;
-}
+.btn { width: 100%; background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 9px; padding: 10px; font-size: 13px; font-family: inherit; cursor: pointer; margin-top: 4px; transition: background 0.2s; letter-spacing: 0.01em; }
 .btn:hover { background: rgba(167,139,250,0.25); }
 .btn:disabled { opacity: 0.4; cursor: default; }
-
-.divider {
-  display: flex; align-items: center; gap: 10px;
-  margin: 16px 0; color: var(--text-muted); font-size: 11px;
-}
-.divider::before, .divider::after {
-  content: ''; flex: 1; height: 1px; background: var(--card-border);
-}
-
+.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--text-muted); font-size: 11px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
 .social-btns { display: flex; flex-direction: column; gap: 8px; }
-
-.btn-social {
-  width: 100%; background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.6); border: 1px solid var(--card-border);
-  border-radius: 9px; padding: 10px; font-size: 13px; font-family: inherit;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  gap: 8px; transition: background 0.2s;
-}
+.btn-social { width: 100%; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); border: 1px solid var(--card-border); border-radius: 9px; padding: 10px; font-size: 13px; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
 .btn-social:hover { background: rgba(255,255,255,0.07); }
-
-.toggle {
-  text-align: center; margin-top: 18px;
-  font-size: 12px; color: var(--text-muted);
-}
+.toggle { text-align: center; margin-top: 18px; font-size: 12px; color: var(--text-muted); }
 .toggle a { color: var(--btn-color); text-decoration: none; cursor: pointer; }
 .toggle a:hover { text-decoration: underline; }
-
-.error-msg {
-  font-size: 12px; color: #fca5a5;
-  margin-top: 10px; text-align: center; min-height: 16px;
-}
-.success-msg {
-  font-size: 12px; color: #6ee7b7;
-  margin-top: 10px; text-align: center; min-height: 16px;
-}
-
-/* phone step */
-#otp-group { display: none; }
-
+.error-msg { font-size: 12px; color: #fca5a5; margin-top: 10px; text-align: center; min-height: 16px; }
+.success-msg { font-size: 12px; color: #6ee7b7; margin-top: 10px; text-align: center; min-height: 16px; }
 .redirect { text-align: center; }
 .redirect p { font-size: 13px; color: var(--text-muted); margin-top: 12px; }
-.spinner {
-  width: 28px; height: 28px;
-  border: 2px solid var(--card-border); border-top-color: var(--btn-color);
-  border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto;
-}
+.spinner { width: 28px; height: 28px; border: 2px solid var(--card-border); border-top-color: var(--btn-color); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.footer {
-  position: fixed; bottom: 20px;
-  font-size: 11px; color: rgba(255,255,255,0.12); letter-spacing: 0.03em;
-}
+.status-icon { font-size: 28px; margin-bottom: 12px; }
+.footer { position: fixed; bottom: 20px; font-size: 11px; color: rgba(255,255,255,0.12); letter-spacing: 0.03em; }
+#otp-group { display: none; }
 </style>
 </head>
 <body>
-
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
-
 <a class="wordmark" href="https://akn.me.uk">
   <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
   <span>akn.id</span>
 </a>
-
 <div class="page">
-  <div class="card" id="card">
+  <div class="card">
 
     <!-- Sign in -->
     <div id="view-signin">
-      <div class="card-sub">sign in</div>
-
-      <div class="field">
-        <input type="email" id="email" placeholder="email" autocomplete="email" />
-      </div>
-      <div class="field">
-        <input type="password" id="password" placeholder="password" autocomplete="current-password" />
-      </div>
-      <button class="btn" id="btn-signin">continue</button>
-
+      <div class="card-title">Welcome back</div>
+      <div class="card-sub">sign in to continue</div>
+      <div class="field"><input type="email" id="email" placeholder="Email" autocomplete="email" /></div>
+      <div class="field"><input type="password" id="password" placeholder="Password" autocomplete="current-password" /></div>
+      <button class="btn" id="btn-signin">Sign In</button>
       <div class="divider">or</div>
-
       <div class="social-btns">
         <button class="btn-social" id="btn-google">
           <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Google
+          Continue with Google
         </button>
         <button class="btn-social" id="btn-apple">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.14-2.18 1.27-2.16 3.8.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.37 2.78M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-          Apple
+          Continue with Apple
         </button>
         <button class="btn-social" id="btn-phone">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 01.01 2.18 2 2 0 012 .01h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-.83a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          phone number
+          Phone Number
         </button>
       </div>
-
       <div class="error-msg" id="signin-error"></div>
-
-      <div class="toggle">
-        no account? <a id="link-to-request">request access</a>
-      </div>
+      <div class="toggle">No account? <a id="link-to-request">Request Access</a></div>
     </div>
 
-    <!-- Phone auth -->
+    <!-- Phone -->
     <div id="view-phone" style="display:none">
-      <div class="card-sub">sign in with phone</div>
+      <div class="card-title">Phone Sign In</div>
+      <div class="card-sub">we'll send you a code</div>
       <div id="phone-group">
-        <div class="field">
-          <input type="tel" id="phone-input" placeholder="+44 7700 000000" autocomplete="tel" />
-        </div>
-        <button class="btn" id="btn-send-otp">send code</button>
+        <div class="field"><input type="tel" id="phone-input" placeholder="+44 7700 000000" autocomplete="tel" /></div>
+        <button class="btn" id="btn-send-otp">Send Code</button>
       </div>
       <div id="otp-group">
-        <div class="field">
-          <input type="tel" id="otp-input" placeholder="6-digit code" autocomplete="one-time-code" maxlength="6" />
-        </div>
-        <button class="btn" id="btn-verify-otp">verify</button>
+        <div class="field"><input type="tel" id="otp-input" placeholder="6-digit code" autocomplete="one-time-code" maxlength="6" /></div>
+        <button class="btn" id="btn-verify-otp">Verify</button>
       </div>
       <div id="recaptcha-container"></div>
       <div class="error-msg" id="phone-error"></div>
-      <div class="toggle"><a id="link-phone-back">back</a></div>
+      <div class="toggle"><a id="link-phone-back">Back</a></div>
     </div>
 
     <!-- Request access -->
     <div id="view-request" style="display:none">
-      <div class="card-sub">request access</div>
-      <div class="field">
-        <input type="email" id="req-email" placeholder="email" autocomplete="email" />
-      </div>
-      <div class="field">
-        <input type="text" id="req-name" placeholder="name" autocomplete="name" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color 0.2s;" />
-      </div>
-      <button class="btn" id="btn-request">send request</button>
+      <div class="card-title">Request Access</div>
+      <div class="card-sub">i'll get back to you</div>
+      <div class="field"><input type="email" id="req-email" placeholder="Email" autocomplete="email" /></div>
+      <div class="field"><input type="text" id="req-name" placeholder="Name" autocomplete="name" /></div>
+      <div class="field"><input type="text" id="req-reason" placeholder="Why do you want access?" /></div>
+      <button class="btn" id="btn-request">Send Request</button>
       <div class="error-msg" id="request-error"></div>
       <div class="success-msg" id="request-success"></div>
-      <div class="toggle">
-        <a id="link-to-signin">back to sign in</a>
-      </div>
+      <div class="toggle"><a id="link-req-back">Back to Sign In</a></div>
     </div>
 
-    <!-- Redirect -->
+    <!-- Pending approval -->
+    <div id="view-pending" style="display:none" class="redirect">
+      <div class="status-icon">⏳</div>
+      <div class="card-title" style="text-align:center">Pending Approval</div>
+      <p style="margin-top:8px">Your account is awaiting approval. You'll be notified once it's active.</p>
+      <button class="btn" id="btn-pending-logout" style="margin-top:20px">Sign Out</button>
+    </div>
+
+    <!-- Rejected -->
+    <div id="view-rejected" style="display:none" class="redirect">
+      <div class="status-icon">🚫</div>
+      <div class="card-title" style="text-align:center">Access Denied</div>
+      <p style="margin-top:8px">This account has not been approved.</p>
+      <button class="btn" id="btn-rejected-logout" style="margin-top:20px">Sign Out</button>
+    </div>
+
+    <!-- Redirecting -->
     <div id="view-redirect" style="display:none" class="redirect">
       <div class="spinner"></div>
-      <p>signed in — redirecting…</p>
+      <p>Signed in — redirecting…</p>
     </div>
 
   </div>
 </div>
-
 <div class="footer">akn.id</div>
-<div id="recaptcha-container-global"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
-  getAuth,
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  OAuthProvider,
-  signInWithPopup,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  onAuthStateChanged,
+  getAuth, signInWithEmailAndPassword, GoogleAuthProvider, OAuthProvider,
+  signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber,
+  onAuthStateChanged, signOut,
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+import {
+  getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, addDoc,
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
 const app = initializeApp({
   apiKey: "AIzaSyDLWVxNsZveffKUaf07mRlrlouM_gyocmI",
-  authDomain: "id.akn.me.uk",
+  authDomain: "aknid-me-uk.firebaseapp.com",
   projectId: "aknid-me-uk",
   storageBucket: "aknid-me-uk.firebasestorage.app",
   messagingSenderId: "903162243588",
   appId: "1:903162243588:web:053d5c3a06c0fb23ee6351",
 });
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 const params = new URLSearchParams(location.search);
 const redirectTo = params.get('redirect') || null;
 
+const ADMIN_EMAIL = 'kabir.a@akn.me.uk';
+
 function showView(name) {
-  ['signin','phone','request','redirect'].forEach(v => {
+  ['signin','phone','request','pending','rejected','redirect'].forEach(v => {
     document.getElementById(`view-${v}`).style.display = v === name ? '' : 'none';
   });
 }
-
 function setError(id, msg) { document.getElementById(id).textContent = msg; }
 
 async function handleSignedIn(user) {
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    // First sign-in — create profile, set pending (unless admin)
+    const isAdmin = user.email === ADMIN_EMAIL;
+    await setDoc(ref, {
+      uid: user.uid,
+      email: user.email || null,
+      displayName: user.displayName || null,
+      photoURL: user.photoURL || null,
+      phone: user.phoneNumber || null,
+      providers: user.providerData.map(p => p.providerId),
+      status: isAdmin ? 'approved' : 'pending',
+      projects: isAdmin ? ['*'] : [],
+      role: isAdmin ? 'admin' : 'user',
+      createdAt: serverTimestamp(),
+      lastSeen: serverTimestamp(),
+      // profile fields (to be filled in)
+      bio: null, location: null, website: null,
+      social: { twitter: null, instagram: null, github: null, linkedin: null },
+    });
+    if (!isAdmin) { showView('pending'); return; }
+  } else {
+    // Update last seen + providers
+    await setDoc(ref, {
+      lastSeen: serverTimestamp(),
+      providers: user.providerData.map(p => p.providerId),
+      email: user.email || snap.data().email,
+      displayName: user.displayName || snap.data().displayName,
+      photoURL: user.photoURL || snap.data().photoURL,
+      phone: user.phoneNumber || snap.data().phone,
+    }, { merge: true });
+
+    const { status } = snap.data();
+    if (status === 'pending') { showView('pending'); return; }
+    if (status === 'rejected') { showView('rejected'); return; }
+  }
+
+  // Approved — redirect or go to account
   showView('redirect');
   if (redirectTo) {
     const token = await user.getIdToken();
     const url = new URL(redirectTo);
     url.searchParams.set('token', token);
     location.href = url.toString();
+  } else {
+    location.href = '/account.html';
   }
 }
 
 onAuthStateChanged(auth, user => { if (user) handleSignedIn(user); });
 
-// Email/password sign in
+// Sign in
 document.getElementById('btn-signin').addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   setError('signin-error', '');
-  if (!email || !password) return setError('signin-error', 'fill in both fields');
+  if (!email || !password) return setError('signin-error', 'Fill in both fields');
   const btn = document.getElementById('btn-signin');
   btn.disabled = true;
   try {
     await signInWithEmailAndPassword(auth, email, password);
-  } catch (e) {
-    btn.disabled = false;
-    setError('signin-error', friendlyError(e.code));
-  }
+  } catch (e) { btn.disabled = false; setError('signin-error', friendlyError(e.code)); }
 });
 document.getElementById('password').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btn-signin').click();
@@ -315,37 +255,31 @@ document.getElementById('password').addEventListener('keydown', e => {
 
 // Google
 document.getElementById('btn-google').addEventListener('click', async () => {
-  try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
-  } catch (e) { setError('signin-error', friendlyError(e.code)); }
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) { setError('signin-error', friendlyError(e.code)); }
 });
 
 // Apple
 document.getElementById('btn-apple').addEventListener('click', async () => {
   try {
-    const provider = new OAuthProvider('apple.com');
-    provider.addScope('email');
-    provider.addScope('name');
-    await signInWithPopup(auth, provider);
+    const p = new OAuthProvider('apple.com');
+    p.addScope('email'); p.addScope('name');
+    await signInWithPopup(auth, p);
   } catch (e) { setError('signin-error', friendlyError(e.code)); }
 });
 
 // Phone
-let confirmationResult = null;
-let recaptchaVerifier = null;
-
+let confirmationResult = null, recaptchaVerifier = null;
 document.getElementById('btn-phone').addEventListener('click', () => {
   showView('phone');
-  if (!recaptchaVerifier) {
+  if (!recaptchaVerifier)
     recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-  }
 });
 document.getElementById('link-phone-back').addEventListener('click', () => showView('signin'));
-
 document.getElementById('btn-send-otp').addEventListener('click', async () => {
   const phone = document.getElementById('phone-input').value.trim();
   setError('phone-error', '');
-  if (!phone) return setError('phone-error', 'enter a phone number');
+  if (!phone) return setError('phone-error', 'Enter a phone number');
   const btn = document.getElementById('btn-send-otp');
   btn.disabled = true;
   try {
@@ -353,67 +287,57 @@ document.getElementById('btn-send-otp').addEventListener('click', async () => {
     document.getElementById('phone-group').style.display = 'none';
     document.getElementById('otp-group').style.display = '';
     document.getElementById('otp-input').focus();
-  } catch (e) {
-    btn.disabled = false;
-    setError('phone-error', friendlyError(e.code));
-  }
+  } catch (e) { btn.disabled = false; setError('phone-error', friendlyError(e.code)); }
 });
-
 document.getElementById('btn-verify-otp').addEventListener('click', async () => {
   const code = document.getElementById('otp-input').value.trim();
   setError('phone-error', '');
-  if (!code) return setError('phone-error', 'enter the code');
+  if (!code) return setError('phone-error', 'Enter the code');
   const btn = document.getElementById('btn-verify-otp');
   btn.disabled = true;
-  try {
-    await confirmationResult.confirm(code);
-  } catch (e) {
-    btn.disabled = false;
-    setError('phone-error', friendlyError(e.code));
-  }
+  try { await confirmationResult.confirm(code); }
+  catch (e) { btn.disabled = false; setError('phone-error', friendlyError(e.code)); }
 });
 
 // Request access
 document.getElementById('link-to-request').addEventListener('click', () => showView('request'));
-document.getElementById('link-to-signin').addEventListener('click', () => showView('signin'));
-
+document.getElementById('link-req-back').addEventListener('click', () => showView('signin'));
 document.getElementById('btn-request').addEventListener('click', async () => {
   const email = document.getElementById('req-email').value.trim();
   const name = document.getElementById('req-name').value.trim();
+  const reason = document.getElementById('req-reason').value.trim();
   setError('request-error', '');
   document.getElementById('request-success').textContent = '';
-  if (!email) return setError('request-error', 'email is required');
+  if (!email) return setError('request-error', 'Email is required');
   const btn = document.getElementById('btn-request');
   btn.disabled = true;
   try {
-    await fetch('https://api.akn.me.uk/id/request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name }),
-    });
-    document.getElementById('request-success').textContent = 'request sent — you\'ll hear back soon';
+    await addDoc(collection(db, 'requests'), { email, name, reason, createdAt: serverTimestamp(), status: 'pending' });
+    document.getElementById('request-success').textContent = "Request sent — you'll hear back soon";
     document.getElementById('req-email').value = '';
     document.getElementById('req-name').value = '';
-  } catch {
-    setError('request-error', 'something went wrong, try again');
-  }
+    document.getElementById('req-reason').value = '';
+  } catch { setError('request-error', 'Something went wrong, try again'); }
   btn.disabled = false;
 });
 
+// Pending/rejected logout
+document.getElementById('btn-pending-logout').addEventListener('click', () => signOut(auth).then(() => showView('signin')));
+document.getElementById('btn-rejected-logout').addEventListener('click', () => signOut(auth).then(() => showView('signin')));
+
 function friendlyError(code) {
-  const map = {
-    'auth/invalid-email': 'invalid email address',
-    'auth/user-not-found': 'no account with that email',
-    'auth/wrong-password': 'incorrect password',
-    'auth/invalid-credential': 'incorrect email or password',
-    'auth/weak-password': 'password is too weak',
-    'auth/too-many-requests': 'too many attempts — try again later',
-    'auth/invalid-phone-number': 'invalid phone number — use international format',
-    'auth/invalid-verification-code': 'incorrect code',
+  return ({
+    'auth/invalid-email': 'Invalid email address',
+    'auth/user-not-found': 'No account with that email',
+    'auth/wrong-password': 'Incorrect password',
+    'auth/invalid-credential': 'Incorrect email or password',
+    'auth/weak-password': 'Password is too weak',
+    'auth/too-many-requests': 'Too many attempts — try again later',
+    'auth/invalid-phone-number': 'Invalid phone number — use international format',
+    'auth/invalid-verification-code': 'Incorrect code',
     'auth/popup-closed-by-user': '',
     'auth/cancelled-popup-request': '',
-  };
-  return map[code] || 'something went wrong';
+  })[code] || 'Something went wrong';
 }
 </script>
 </body>

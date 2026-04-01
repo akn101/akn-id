@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account — akn.id</title>
+<link rel="icon" href="https://akn.me.uk/favicon.ico">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
+  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
+  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
+  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
+  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3);
+}
+html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+.blob { position: fixed; border-radius: 100px; filter: blur(80px); opacity: 0.12; z-index: 0; pointer-events: none; }
+.blob-1 { background: linear-gradient(135deg,#667eea,#764ba2); top:5%; right:5%; width:380px; height:380px; animation: b1 20s ease-in-out infinite; }
+.blob-2 { background: linear-gradient(135deg,#f093fb,#f5576c); bottom:10%; left:5%; width:300px; height:300px; animation: b2 18s ease-in-out infinite 3s; }
+@keyframes b1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-25px)} }
+@keyframes b2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
+.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; background: linear-gradient(to bottom, var(--bg) 60%, transparent); }
+.wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
+.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); object-fit: cover; }
+.avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--btn-bg); border: 1px solid var(--btn-border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--btn-color); }
+.signout-btn { font-size: 12px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+.signout-btn:hover { color: var(--text); }
+.page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 96px 24px 60px; }
+h1 { font-size: 1.3rem; font-weight: 500; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 40px; }
+.section { margin-bottom: 32px; }
+.section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; }
+input, textarea, select {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--input-border);
+  border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 13px;
+  font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+textarea { resize: none; height: 70px; }
+input:focus, textarea:focus { border-color: var(--input-focus); }
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
+input[readonly] { opacity: 0.5; cursor: not-allowed; }
+.btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 9px; padding: 9px 18px; font-size: 13px; font-family: inherit; cursor: pointer; transition: background 0.2s; letter-spacing: 0.01em; }
+.btn:hover { background: rgba(167,139,250,0.25); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn-danger { background: rgba(252,165,165,0.1); color: #fca5a5; border-color: rgba(252,165,165,0.25); }
+.btn-danger:hover { background: rgba(252,165,165,0.18); }
+.provider-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--card-border); }
+.provider-row:last-child { border-bottom: none; padding-bottom: 0; }
+.provider-info { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.provider-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-linked { background: #6ee7b7; }
+.dot-unlinked { background: var(--card-border); }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
+.badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+.project-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-muted); margin: 4px; }
+.save-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.save-msg { font-size: 12px; color: #6ee7b7; }
+.loading { text-align: center; padding: 60px; color: var(--text-muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="topbar">
+  <a class="wordmark" href="https://akn.me.uk">
+    <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
+    <span>akn.id</span>
+  </a>
+  <div class="topbar-right">
+    <div id="avatar-wrap"></div>
+    <button class="signout-btn" id="btn-signout">Sign Out</button>
+  </div>
+</div>
+
+<div class="page" id="page" style="display:none">
+  <h1 id="greeting">My Account</h1>
+  <div class="page-sub" id="account-email"></div>
+
+  <!-- Status & Projects -->
+  <div class="section">
+    <div class="section-title">Access</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span id="status-badge" class="badge"></span>
+        <span id="admin-link-wrap"></span>
+      </div>
+      <div id="projects-wrap">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Projects</div>
+        <div id="projects-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile -->
+  <div class="section">
+    <div class="section-title">Profile</div>
+    <div class="card">
+      <div class="field-row">
+        <div class="field"><label>Display Name</label><input type="text" id="f-name" placeholder="Your name" /></div>
+        <div class="field"><label>Username / Handle</label><input type="text" id="f-handle" placeholder="@handle" /></div>
+      </div>
+      <div class="field"><label>Bio</label><textarea id="f-bio" placeholder="A short bio"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Location</label><input type="text" id="f-location" placeholder="City, Country" /></div>
+        <div class="field"><label>Website</label><input type="url" id="f-website" placeholder="https://" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Date of Birth</label><input type="date" id="f-dob" /></div>
+        <div class="field"><label>Occupation</label><input type="text" id="f-occupation" placeholder="What do you do?" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="section">
+    <div class="section-title">Contact</div>
+    <div class="card">
+      <div class="field"><label>Email</label><input type="email" id="f-email" readonly /></div>
+      <div class="field"><label>Phone</label><input type="tel" id="f-phone" placeholder="+44 7700 000000" /></div>
+    </div>
+  </div>
+
+  <!-- Social -->
+  <div class="section">
+    <div class="section-title">Social</div>
+    <div class="card">
+      <div class="field-row">
+        <div class="field"><label>Twitter / X</label><input type="text" id="f-twitter" placeholder="@username" /></div>
+        <div class="field"><label>Instagram</label><input type="text" id="f-instagram" placeholder="@username" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>GitHub</label><input type="text" id="f-github" placeholder="username" /></div>
+        <div class="field"><label>LinkedIn</label><input type="text" id="f-linkedin" placeholder="profile URL or handle" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preferences -->
+  <div class="section">
+    <div class="section-title">Preferences</div>
+    <div class="card">
+      <div class="field-row">
+        <div class="field"><label>Language</label>
+          <select id="f-lang">
+            <option value="en">English</option>
+            <option value="ur">Urdu</option>
+            <option value="fr">French</option>
+            <option value="ar">Arabic</option>
+          </select>
+        </div>
+        <div class="field"><label>Timezone</label><input type="text" id="f-tz" placeholder="Europe/London" /></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-row">
+    <button class="btn" id="btn-save">Save Changes</button>
+    <span class="save-msg" id="save-msg"></span>
+  </div>
+
+  <!-- Sign-in methods -->
+  <div class="section" style="margin-top:32px">
+    <div class="section-title">Sign-in Methods</div>
+    <div class="card" id="providers-list"></div>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="section">
+    <div class="section-title">Account</div>
+    <div class="card" style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-danger" id="btn-delete">Delete Account</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading" id="loading">Loading…</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import {
+  getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, OAuthProvider,
+  linkWithPopup, unlink, deleteUser,
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+import {
+  getFirestore, doc, getDoc, setDoc, serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+const app = initializeApp({
+  apiKey: "AIzaSyDLWVxNsZveffKUaf07mRlrlouM_gyocmI",
+  authDomain: "aknid-me-uk.firebaseapp.com",
+  projectId: "aknid-me-uk",
+  storageBucket: "aknid-me-uk.firebasestorage.app",
+  messagingSenderId: "903162243588",
+  appId: "1:903162243588:web:053d5c3a06c0fb23ee6351",
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const PROVIDERS = [
+  { id: 'google.com', label: 'Google', Provider: GoogleAuthProvider },
+  { id: 'apple.com', label: 'Apple', Provider: () => new OAuthProvider('apple.com') },
+  { id: 'password', label: 'Email / Password', Provider: null },
+  { id: 'phone', label: 'Phone Number', Provider: null },
+];
+
+onAuthStateChanged(auth, async user => {
+  if (!user) { location.href = '/'; return; }
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('page').style.display = '';
+
+  // Avatar
+  const avatarWrap = document.getElementById('avatar-wrap');
+  if (user.photoURL) {
+    avatarWrap.innerHTML = `<img class="avatar" src="${user.photoURL}" alt="">`;
+  } else {
+    const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+    avatarWrap.innerHTML = `<div class="avatar-placeholder">${initial}</div>`;
+  }
+
+  const snap = await getDoc(doc(db, 'users', user.uid));
+  const data = snap.exists() ? snap.data() : {};
+
+  // Header
+  document.getElementById('greeting').textContent = data.displayName || user.displayName || 'My Account';
+  document.getElementById('account-email').textContent = user.email || user.phoneNumber || '';
+
+  // Status badge
+  const badge = document.getElementById('status-badge');
+  badge.textContent = data.status || 'pending';
+  badge.className = `badge badge-${data.status === 'approved' ? 'approved' : 'pending'}`;
+
+  // Admin link
+  if (data.role === 'admin') {
+    document.getElementById('admin-link-wrap').innerHTML = '<a href="/admin.html" style="font-size:12px;color:var(--btn-color);text-decoration:none">Admin Panel →</a>';
+  }
+
+  // Projects
+  const projects = data.projects || [];
+  const pl = document.getElementById('projects-list');
+  pl.innerHTML = projects.length
+    ? projects.map(p => `<span class="project-chip">${p}</span>`).join('')
+    : '<span style="font-size:12px;color:var(--text-muted)">No projects assigned</span>';
+
+  // Fill form
+  const f = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  f('f-name', data.displayName || user.displayName);
+  f('f-handle', data.handle);
+  f('f-bio', data.bio);
+  f('f-location', data.location);
+  f('f-website', data.website);
+  f('f-dob', data.dob);
+  f('f-occupation', data.occupation);
+  f('f-email', user.email);
+  f('f-phone', user.phoneNumber || data.phone);
+  f('f-twitter', data.social?.twitter);
+  f('f-instagram', data.social?.instagram);
+  f('f-github', data.social?.github);
+  f('f-linkedin', data.social?.linkedin);
+  f('f-lang', data.preferences?.language || 'en');
+  f('f-tz', data.preferences?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+
+  // Providers
+  const linked = user.providerData.map(p => p.providerId);
+  const pl2 = document.getElementById('providers-list');
+  pl2.innerHTML = PROVIDERS.map(p => `
+    <div class="provider-row">
+      <div class="provider-info">
+        <span class="provider-dot ${linked.includes(p.id) ? 'dot-linked' : 'dot-unlinked'}"></span>
+        ${p.label}
+      </div>
+      ${p.Provider && !linked.includes(p.id)
+        ? `<button class="btn" onclick="linkProvider('${p.id}')">Link</button>`
+        : linked.includes(p.id) && linked.length > 1 && p.Provider
+          ? `<button class="btn btn-danger" onclick="unlinkProvider('${p.id}')">Unlink</button>`
+          : `<span style="font-size:12px;color:var(--text-muted)">${linked.includes(p.id) ? 'Active' : '—'}</span>`
+      }
+    </div>
+  `).join('');
+
+  // Save
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-save');
+    const msg = document.getElementById('save-msg');
+    btn.disabled = true; msg.textContent = '';
+    const g = id => document.getElementById(id).value.trim();
+    try {
+      await setDoc(doc(db, 'users', user.uid), {
+        displayName: g('f-name') || null,
+        handle: g('f-handle') || null,
+        bio: g('f-bio') || null,
+        location: g('f-location') || null,
+        website: g('f-website') || null,
+        dob: g('f-dob') || null,
+        occupation: g('f-occupation') || null,
+        phone: g('f-phone') || null,
+        social: {
+          twitter: g('f-twitter') || null,
+          instagram: g('f-instagram') || null,
+          github: g('f-github') || null,
+          linkedin: g('f-linkedin') || null,
+        },
+        preferences: {
+          language: g('f-lang') || 'en',
+          timezone: g('f-tz') || null,
+        },
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      msg.textContent = 'Saved';
+      setTimeout(() => msg.textContent = '', 3000);
+    } catch (e) { msg.textContent = 'Error saving'; msg.style.color = '#fca5a5'; }
+    btn.disabled = false;
+  });
+});
+
+window.linkProvider = async (id) => {
+  const user = auth.currentUser;
+  try {
+    const p = id === 'google.com' ? new GoogleAuthProvider() : new OAuthProvider(id);
+    await linkWithPopup(user, p);
+    location.reload();
+  } catch (e) { alert(e.message); }
+};
+window.unlinkProvider = async (id) => {
+  if (!confirm(`Unlink ${id}?`)) return;
+  try { await unlink(auth.currentUser, id); location.reload(); }
+  catch (e) { alert(e.message); }
+};
+
+document.getElementById('btn-signout').addEventListener('click', () =>
+  signOut(auth).then(() => location.href = '/')
+);
+document.getElementById('btn-delete').addEventListener('click', async () => {
+  if (!confirm('Permanently delete your account? This cannot be undone.')) return;
+  try { await deleteUser(auth.currentUser); location.href = '/'; }
+  catch (e) { alert('Re-authenticate and try again: ' + e.message); }
+});
+</script>
+</body>
+</html>

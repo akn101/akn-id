@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — akn.id</title>
+<link rel="icon" href="https://akn.me.uk/favicon.ico">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
+  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
+  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
+  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
+  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3);
+}
+html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid var(--card-border); }
+.wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
+.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
+.topbar-right { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--text-muted); }
+.topbar-right a { color: var(--btn-color); text-decoration: none; }
+.page { max-width: 860px; margin: 0 auto; padding: 40px 24px 60px; }
+h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid var(--card-border); }
+.tab { padding: 8px 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: color 0.2s; }
+.tab.active { color: var(--btn-color); border-bottom-color: var(--btn-color); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+.user-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; }
+.user-row:last-child { border-bottom: none; }
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--btn-bg); border: 1px solid var(--btn-border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--btn-color); flex-shrink: 0; overflow: hidden; }
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 13px; font-weight: 500; }
+.user-email { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
+.badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+.badge-rejected { background: rgba(252,165,165,0.1); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
+.btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 7px; padding: 5px 12px; font-size: 12px; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+.btn:hover { background: rgba(167,139,250,0.25); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: rgba(110,231,183,0.1); color: #6ee7b7; border-color: rgba(110,231,183,0.25); }
+.btn-approve:hover { background: rgba(110,231,183,0.18); }
+.btn-reject { background: rgba(252,165,165,0.08); color: #fca5a5; border-color: rgba(252,165,165,0.2); }
+.btn-reject:hover { background: rgba(252,165,165,0.15); }
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; }
+.empty { padding: 32px; text-align: center; font-size: 13px; color: var(--text-muted); }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; }
+input, select { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus { border-color: var(--input-focus); }
+input::placeholder { color: var(--text-muted); }
+.create-form { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+.msg { font-size: 12px; margin-top: 10px; min-height: 16px; }
+.msg-ok { color: #6ee7b7; }
+.msg-err { color: #fca5a5; }
+.tag-input-wrap { display: flex; flex-wrap: wrap; gap: 6px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 9px; padding: 7px 10px; cursor: text; }
+.tag-input-wrap:focus-within { border-color: var(--input-focus); }
+.tag { display: flex; align-items: center; gap: 4px; background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 20px; padding: 2px 8px; font-size: 12px; }
+.tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; opacity: 0.6; }
+.tag-input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; font-family: inherit; min-width: 80px; flex: 1; padding: 2px 0; }
+.user-detail { padding: 20px; }
+.detail-section { margin-bottom: 20px; }
+.detail-title { font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+.kv-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+.kv-key { color: var(--text-muted); min-width: 100px; flex-shrink: 0; }
+.kv-val { color: var(--text); word-break: break-all; }
+.request-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--card-border); }
+.request-row:last-child { border-bottom: none; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+@media (max-width: 500px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+.stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; }
+.stat-num { font-size: 1.6rem; font-weight: 500; color: var(--btn-color); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="wordmark" href="https://akn.me.uk">
+    <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
+    <span>akn.id / admin</span>
+  </a>
+  <div class="topbar-right">
+    <a href="/account.html">My Account</a>
+    <button id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;color:var(--text-muted)">Sign Out</button>
+  </div>
+</div>
+
+<div class="page" id="page" style="display:none">
+  <h1>User Management</h1>
+  <div class="page-sub" id="admin-email-display"></div>
+
+  <!-- Stats -->
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Users</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-requests">—</div><div class="stat-label">Requests</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="users">Users</button>
+    <button class="tab" data-tab="pending">Pending</button>
+    <button class="tab" data-tab="requests">Requests</button>
+    <button class="tab" data-tab="create">Create User</button>
+    <button class="tab" data-tab="projects">Projects</button>
+  </div>
+
+  <!-- Users tab -->
+  <div class="tab-panel active" id="tab-users">
+    <div class="card" id="users-list"><div class="empty">Loading…</div></div>
+  </div>
+
+  <!-- Pending tab -->
+  <div class="tab-panel" id="tab-pending">
+    <div class="card" id="pending-list"><div class="empty">Loading…</div></div>
+  </div>
+
+  <!-- Requests tab -->
+  <div class="tab-panel" id="tab-requests">
+    <div class="card" id="requests-list"><div class="empty">Loading…</div></div>
+  </div>
+
+  <!-- Create user tab -->
+  <div class="tab-panel" id="tab-create">
+    <div class="create-form">
+      <div class="section-title">Create Account</div>
+      <div class="form-row">
+        <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="user@example.com" /></div>
+        <div class="field"><label>Display Name</label><input type="text" id="c-name" placeholder="Full name" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Password</label><input type="password" id="c-password" placeholder="Temporary password" /></div>
+        <div class="field"><label>Role</label>
+          <select id="c-role"><option value="user">User</option><option value="admin">Admin</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Projects</label>
+        <div class="tag-input-wrap" id="c-projects-wrap">
+          <input class="tag-input" id="c-projects-input" placeholder="Type project and press Enter" />
+        </div>
+      </div>
+      <button class="btn" id="btn-create-user">Create User</button>
+      <div class="msg" id="create-msg"></div>
+    </div>
+  </div>
+
+  <!-- Projects tab -->
+  <div class="tab-panel" id="tab-projects">
+    <div class="create-form" style="margin-bottom:20px">
+      <div class="section-title">New Project</div>
+      <div class="form-row">
+        <div class="field"><label>Project ID</label><input type="text" id="p-id" placeholder="tpi.akn.org.uk" /></div>
+        <div class="field"><label>Display Name</label><input type="text" id="p-name" placeholder="TPI" /></div>
+      </div>
+      <div class="field"><label>Description</label><input type="text" id="p-desc" placeholder="What is this project?" /></div>
+      <button class="btn" id="btn-create-project">Create Project</button>
+      <div class="msg" id="project-msg"></div>
+    </div>
+    <div class="card" id="projects-list-admin"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
+<div class="empty" id="loading" style="padding:80px">Loading…</div>
+<div class="empty" id="denied" style="display:none;padding:80px">Access denied.</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import {
+  getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword,
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+import {
+  getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc,
+  serverTimestamp, query, orderBy, where, deleteDoc,
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+const app = initializeApp({
+  apiKey: "AIzaSyDLWVxNsZveffKUaf07mRlrlouM_gyocmI",
+  authDomain: "aknid-me-uk.firebaseapp.com",
+  projectId: "aknid-me-uk",
+  storageBucket: "aknid-me-uk.firebasestorage.app",
+  messagingSenderId: "903162243588",
+  appId: "1:903162243588:web:053d5c3a06c0fb23ee6351",
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+const ADMIN_EMAIL = 'kabir.a@akn.me.uk';
+
+let allUsers = [], allRequests = [], allProjects = [];
+let createProjects = [];
+
+onAuthStateChanged(auth, async user => {
+  document.getElementById('loading').style.display = 'none';
+  if (!user || user.email !== ADMIN_EMAIL) {
+    document.getElementById('denied').style.display = '';
+    return;
+  }
+  document.getElementById('page').style.display = '';
+  document.getElementById('admin-email-display').textContent = user.email;
+  await loadAll();
+});
+
+async function loadAll() {
+  const [usersSnap, requestsSnap, projectsSnap] = await Promise.all([
+    getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc'))),
+    getDocs(query(collection(db, 'requests'), orderBy('createdAt', 'desc'))),
+    getDocs(collection(db, 'projects')),
+  ]);
+  allUsers = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  allRequests = requestsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  allProjects = projectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  const pending = allUsers.filter(u => u.status === 'pending');
+  document.getElementById('stat-total').textContent = allUsers.length;
+  document.getElementById('stat-pending').textContent = pending.length;
+  document.getElementById('stat-requests').textContent = allRequests.filter(r => r.status === 'pending').length;
+
+  renderUsers(allUsers, 'users-list');
+  renderUsers(pending, 'pending-list');
+  renderRequests();
+  renderProjects();
+}
+
+function ts(val) {
+  if (!val) return '—';
+  const d = val.toDate ? val.toDate() : new Date(val);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderUsers(users, containerId) {
+  const el = document.getElementById(containerId);
+  if (!users.length) { el.innerHTML = '<div class="empty">None</div>'; return; }
+  el.innerHTML = users.map(u => `
+    <div class="user-row">
+      <div class="user-avatar">
+        ${u.photoURL ? `<img src="${u.photoURL}">` : (u.displayName || u.email || '?')[0].toUpperCase()}
+      </div>
+      <div class="user-info">
+        <div class="user-name">${u.displayName || '—'}</div>
+        <div class="user-email">${u.email || u.phone || '—'}</div>
+        <div class="user-meta">Joined ${ts(u.createdAt)} · ${(u.projects||[]).join(', ') || 'no projects'}</div>
+      </div>
+      <span class="badge badge-${u.status}">${u.status}</span>
+      <div class="actions">
+        ${u.status !== 'approved' ? `<button class="btn btn-approve" onclick="setStatus('${u.id}','approved')">Approve</button>` : ''}
+        ${u.status !== 'rejected' ? `<button class="btn btn-reject" onclick="setStatus('${u.id}','rejected')">Reject</button>` : ''}
+        <button class="btn" onclick="editUser('${u.id}')">Edit</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderRequests() {
+  const el = document.getElementById('requests-list');
+  const pending = allRequests.filter(r => r.status === 'pending');
+  if (!pending.length) { el.innerHTML = '<div class="empty">No pending requests</div>'; return; }
+  el.innerHTML = pending.map(r => `
+    <div class="request-row">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${r.name || '—'}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${r.email}</div>
+        ${r.reason ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px">"${r.reason}"</div>` : ''}
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${ts(r.createdAt)}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-approve" onclick="approveRequest('${r.id}','${r.email}','${r.name||''}')">Approve</button>
+        <button class="btn btn-reject" onclick="dismissRequest('${r.id}')">Dismiss</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderProjects() {
+  const el = document.getElementById('projects-list-admin');
+  if (!allProjects.length) { el.innerHTML = '<div class="empty">No projects yet</div>'; return; }
+  el.innerHTML = allProjects.map(p => `
+    <div class="user-row">
+      <div class="user-info">
+        <div class="user-name">${p.id}</div>
+        <div class="user-email">${p.name || ''} ${p.description ? '· ' + p.description : ''}</div>
+        <div class="user-meta">${allUsers.filter(u => (u.projects||[]).includes(p.id) || (u.projects||[]).includes('*')).length} users</div>
+      </div>
+      <button class="btn btn-reject" onclick="deleteProject('${p.id}')">Delete</button>
+    </div>
+  `).join('');
+}
+
+window.setStatus = async (uid, status) => {
+  await updateDoc(doc(db, 'users', uid), { status });
+  await loadAll();
+};
+
+window.editUser = async (uid) => {
+  const u = allUsers.find(x => x.id === uid);
+  if (!u) return;
+  const projects = prompt('Projects (comma-separated):', (u.projects||[]).join(', '));
+  if (projects === null) return;
+  const role = prompt('Role (user/admin):', u.role || 'user');
+  if (role === null) return;
+  await updateDoc(doc(db, 'users', uid), {
+    projects: projects.split(',').map(s => s.trim()).filter(Boolean),
+    role: role.trim(),
+  });
+  await loadAll();
+};
+
+window.approveRequest = async (reqId, email, name) => {
+  await updateDoc(doc(db, 'requests', reqId), { status: 'approved' });
+  alert(`Request from ${email} approved. Create their account in the Create User tab.`);
+  await loadAll();
+};
+window.dismissRequest = async (reqId) => {
+  await updateDoc(doc(db, 'requests', reqId), { status: 'dismissed' });
+  await loadAll();
+};
+window.deleteProject = async (id) => {
+  if (!confirm(`Delete project "${id}"?`)) return;
+  await deleteDoc(doc(db, 'projects', id));
+  await loadAll();
+};
+
+// Create user (sets up Firestore doc — Firebase Auth account created on first login)
+document.getElementById('btn-create-user').addEventListener('click', async () => {
+  const email = document.getElementById('c-email').value.trim();
+  const name = document.getElementById('c-name').value.trim();
+  const role = document.getElementById('c-role').value;
+  const msg = document.getElementById('create-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  if (!email) { msg.className = 'msg msg-err'; msg.textContent = 'Email is required'; return; }
+  const btn = document.getElementById('btn-create-user');
+  btn.disabled = true;
+  try {
+    // Pre-provision the user in Firestore — they'll be auto-approved on first sign-in
+    const uid = btoa(email).replace(/[^a-zA-Z0-9]/g,'').slice(0,28) + '_provisioned';
+    await setDoc(doc(db, 'users', uid), {
+      uid,
+      email,
+      displayName: name || null,
+      status: 'approved',
+      projects: createProjects,
+      role,
+      provisioned: true,
+      provisionedEmail: email,
+      createdAt: serverTimestamp(),
+      lastSeen: null,
+    });
+    msg.className = 'msg msg-ok'; msg.textContent = `Account provisioned for ${email}. They'll be auto-approved on first sign-in.`;
+    document.getElementById('c-email').value = '';
+    document.getElementById('c-name').value = '';
+    createProjects = [];
+    renderTags();
+    await loadAll();
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+  btn.disabled = false;
+});
+
+// Create project
+document.getElementById('btn-create-project').addEventListener('click', async () => {
+  const id = document.getElementById('p-id').value.trim();
+  const name = document.getElementById('p-name').value.trim();
+  const desc = document.getElementById('p-desc').value.trim();
+  const msg = document.getElementById('project-msg');
+  if (!id) { msg.className = 'msg msg-err'; msg.textContent = 'Project ID is required'; return; }
+  await setDoc(doc(db, 'projects', id), { name, description: desc, createdAt: serverTimestamp() });
+  msg.className = 'msg msg-ok'; msg.textContent = `Project "${id}" created`;
+  document.getElementById('p-id').value = '';
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-desc').value = '';
+  await loadAll();
+});
+
+// Tag input for projects
+function renderTags() {
+  const wrap = document.getElementById('c-projects-wrap');
+  const input = document.getElementById('c-projects-input');
+  wrap.querySelectorAll('.tag').forEach(t => t.remove());
+  createProjects.forEach((p, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = `${p} <button onclick="removeTag(${i})">×</button>`;
+    wrap.insertBefore(tag, input);
+  });
+}
+window.removeTag = (i) => { createProjects.splice(i, 1); renderTags(); };
+document.getElementById('c-projects-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(',','');
+    if (val && !createProjects.includes(val)) { createProjects.push(val); renderTags(); }
+    e.target.value = '';
+  }
+});
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+  });
+});
+
+document.getElementById('btn-signout').addEventListener('click', () =>
+  signOut(auth).then(() => location.href = '/')
+);
+</script>
+</body>
+</html>
