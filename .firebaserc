@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "aknid-me-uk"
+  },
+  "targets": {
+    "aknid-me-uk": {
+      "hosting": {
+        "aknid-me-uk": [
+          "aknid-me-uk"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
