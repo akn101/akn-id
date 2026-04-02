@@ -298,7 +298,7 @@ async function api(path, opts = {}) {
 // Auth check
 async function init() {
   try {
-    const session = await api('/auth/session/refresh');
+    const session = await api('/auth/session/refresh', { method: 'POST' });
     if (!session.authenticated) throw new Error('not authenticated');
     if (session.role !== 'admin' && !session.projects?.includes('*')) {
       document.getElementById('loading').style.display = 'none';
