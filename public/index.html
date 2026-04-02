@@ -230,10 +230,13 @@ async function handleSignedIn(user) {
   showView('redirect');
   const idToken = await user.getIdToken();
   const dest = redirectTo || 'https://akn.me.uk';
-  let project = 'akn.id';
+  let project = 'halcyon'; // default for akn.me.uk / www.akn.me.uk
   try {
-    const destHost = new URL(dest).hostname.split('.')[0];
-    if (['thoughts','startpage','halcyon'].includes(destHost)) project = destHost;
+    const subdomain = new URL(dest).hostname.split('.')[0];
+    if (subdomain === 'startpage') project = 'startpage';
+    else if (subdomain === 'thoughts') project = 'thoughts';
+    else if (subdomain === 'cloud' || subdomain === 'casanova') project = 'nextcloud';
+    else if (['halcyon','www','akn'].includes(subdomain)) project = 'halcyon';
   } catch {}
   try {
     await fetch('https://api.akn.me.uk/auth/verify', {
@@ -359,3 +362,4 @@ function friendlyError(code) {
 </script>
 </body>
 </html>
+

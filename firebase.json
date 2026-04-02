@@ -15,17 +15,17 @@
       }
     ],
     "redirects": [
-      { "source": "/login",     "destination": "/",           "type": 301 },
-      { "source": "/signin",    "destination": "/",           "type": 301 },
-      { "source": "/sign-in",   "destination": "/",           "type": 301 },
-      { "source": "/signup",    "destination": "/",           "type": 301 },
-      { "source": "/sign-up",   "destination": "/",           "type": 301 },
-      { "source": "/register",  "destination": "/",           "type": 301 },
-      { "source": "/logout",    "destination": "/",           "type": 301 },
-      { "source": "/profile",   "destination": "/account",    "type": 301 },
-      { "source": "/me",        "destination": "/account",    "type": 301 },
-      { "source": "/settings",  "destination": "/account",    "type": 301 },
-      { "source": "/dashboard", "destination": "/admin",      "type": 301 }
+      { "source": "/login",     "destination": "/",              "type": 301 },
+      { "source": "/signin",    "destination": "/",              "type": 301 },
+      { "source": "/sign-in",   "destination": "/",              "type": 301 },
+      { "source": "/signup",    "destination": "/",              "type": 301 },
+      { "source": "/sign-up",   "destination": "/",              "type": 301 },
+      { "source": "/register",  "destination": "/",              "type": 301 },
+      { "source": "/logout",    "destination": "/",              "type": 301 },
+      { "source": "/profile",   "destination": "/account",       "type": 301 },
+      { "source": "/me",        "destination": "/account",       "type": 301 },
+      { "source": "/settings",  "destination": "/account",       "type": 301 },
+      { "source": "/dashboard", "destination": "/admin",         "type": 301 }
     ]
   },
   "firestore": {
