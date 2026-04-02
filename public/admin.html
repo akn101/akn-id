@@ -21,7 +21,7 @@ html, body { min-height: 100%; background: var(--bg); color: var(--text); font-f
 .wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
 .topbar-right { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--text-muted); }
 .topbar-right a { color: var(--btn-color); text-decoration: none; }
-.page { max-width: 860px; margin: 0 auto; padding: 40px 24px 60px; }
+.page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
 h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; }
 .tabs { display: flex; gap: 4px; margin-bottom: 28px; border-bottom: 1px solid var(--card-border); }
@@ -30,19 +30,21 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 .section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
-.user-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; }
-.user-row:last-child { border-bottom: none; }
-.user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--btn-bg); border: 1px solid var(--btn-border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--btn-color); flex-shrink: 0; overflow: hidden; }
-.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.user-info { flex: 1; min-width: 0; }
-.user-name { font-size: 13px; font-weight: 500; }
-.user-email { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.person-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; cursor: pointer; transition: background 0.15s; }
+.person-row:last-child { border-bottom: none; }
+.person-row:hover { background: rgba(255,255,255,0.02); }
+.person-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--btn-bg); border: 1px solid var(--btn-border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--btn-color); flex-shrink: 0; overflow: hidden; }
+.person-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.person-info { flex: 1; min-width: 0; }
+.person-name { font-size: 13px; font-weight: 500; }
+.person-email { font-size: 12px; color: var(--text-muted); }
+.person-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
 .badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
 .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
 .badge-rejected { background: rgba(252,165,165,0.1); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
+.badge-admin { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
 .btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 7px; padding: 5px 12px; font-size: 12px; font-family: inherit; cursor: pointer; transition: background 0.2s; }
 .btn:hover { background: rgba(167,139,250,0.25); }
 .btn:disabled { opacity: 0.4; cursor: default; }
@@ -50,6 +52,8 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .btn-approve:hover { background: rgba(110,231,183,0.18); }
 .btn-reject { background: rgba(252,165,165,0.08); color: #fca5a5; border-color: rgba(252,165,165,0.2); }
 .btn-reject:hover { background: rgba(252,165,165,0.15); }
+.btn-danger { background: rgba(252,165,165,0.08); color: #fca5a5; border-color: rgba(252,165,165,0.2); font-size: 12px; }
+.btn-danger:hover { background: rgba(252,165,165,0.15); }
 .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; }
 .empty { padding: 32px; text-align: center; font-size: 13px; color: var(--text-muted); }
 .field { margin-bottom: 12px; }
@@ -68,19 +72,22 @@ input::placeholder { color: var(--text-muted); }
 .tag { display: flex; align-items: center; gap: 4px; background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 20px; padding: 2px 8px; font-size: 12px; }
 .tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; opacity: 0.6; }
 .tag-input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; font-family: inherit; min-width: 80px; flex: 1; padding: 2px 0; }
-.user-detail { padding: 20px; }
-.detail-section { margin-bottom: 20px; }
-.detail-title { font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
-.kv-row { display: flex; gap: 8px; font-size: 13px; margin-bottom: 6px; }
-.kv-key { color: var(--text-muted); min-width: 100px; flex-shrink: 0; }
-.kv-val { color: var(--text); word-break: break-all; }
-.request-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--card-border); }
-.request-row:last-child { border-bottom: none; }
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
 @media (max-width: 500px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
 .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; }
 .stat-num { font-size: 1.6rem; font-weight: 500; color: var(--btn-color); }
 .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+/* Modal */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+.overlay.open { display: flex; }
+.modal { background: #13131f; border: 1px solid var(--card-border); border-radius: 18px; padding: 28px; width: 100%; max-width: 560px; }
+.modal-title { font-size: 1rem; font-weight: 500; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.identity-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--card-border); font-size: 12px; }
+.identity-row:last-child { border-bottom: none; }
+.identity-uid { font-family: monospace; font-size: 11px; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
@@ -90,55 +97,47 @@ input::placeholder { color: var(--text-muted); }
     <span>akn.id / admin</span>
   </a>
   <div class="topbar-right">
-    <a href="/account.html">My Account</a>
+    <span id="admin-name"></span>
+    <a href="/account">My Account</a>
     <button id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;color:var(--text-muted)">Sign Out</button>
   </div>
 </div>
 
 <div class="page" id="page" style="display:none">
-  <h1>User Management</h1>
-  <div class="page-sub" id="admin-email-display"></div>
+  <h1>People</h1>
+  <div class="page-sub">Identity & access management</div>
 
-  <!-- Stats -->
   <div class="stat-grid">
-    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Users</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total People</div></div>
     <div class="stat-card"><div class="stat-num" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
-    <div class="stat-card"><div class="stat-num" id="stat-requests">—</div><div class="stat-label">Requests</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="users">Users</button>
+    <button class="tab active" data-tab="people">All People</button>
     <button class="tab" data-tab="pending">Pending</button>
-    <button class="tab" data-tab="requests">Requests</button>
-    <button class="tab" data-tab="create">Create User</button>
-    <button class="tab" data-tab="projects">Projects</button>
+    <button class="tab" data-tab="create">Create Person</button>
   </div>
 
-  <!-- Users tab -->
-  <div class="tab-panel active" id="tab-users">
-    <div class="card" id="users-list"><div class="empty">Loading…</div></div>
+  <div class="tab-panel active" id="tab-people">
+    <div class="card" id="people-list"><div class="empty">Loading…</div></div>
   </div>
 
-  <!-- Pending tab -->
   <div class="tab-panel" id="tab-pending">
     <div class="card" id="pending-list"><div class="empty">Loading…</div></div>
   </div>
 
-  <!-- Requests tab -->
-  <div class="tab-panel" id="tab-requests">
-    <div class="card" id="requests-list"><div class="empty">Loading…</div></div>
-  </div>
-
-  <!-- Create user tab -->
   <div class="tab-panel" id="tab-create">
     <div class="create-form">
-      <div class="section-title">Create Account</div>
+      <div class="section-title">Create Person</div>
       <div class="form-row">
-        <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="user@example.com" /></div>
-        <div class="field"><label>Display Name</label><input type="text" id="c-name" placeholder="Full name" /></div>
+        <div class="field"><label>Name *</label><input type="text" id="c-name" placeholder="Full name" /></div>
+        <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="person@example.com" /></div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Password</label><input type="password" id="c-password" placeholder="Temporary password" /></div>
+        <div class="field"><label>Status</label>
+          <select id="c-status"><option value="pending">Pending</option><option value="approved">Approved</option></select>
+        </div>
         <div class="field"><label>Role</label>
           <select id="c-role"><option value="user">User</option><option value="admin">Admin</option></select>
         </div>
@@ -149,255 +148,371 @@ input::placeholder { color: var(--text-muted); }
           <input class="tag-input" id="c-projects-input" placeholder="Type project and press Enter" />
         </div>
       </div>
-      <button class="btn" id="btn-create-user">Create User</button>
+      <div class="field">
+        <label>Groups</label>
+        <div class="tag-input-wrap" id="c-groups-wrap">
+          <input class="tag-input" id="c-groups-input" placeholder="friends, family…" />
+        </div>
+      </div>
+      <button class="btn" id="btn-create-person" style="margin-top:8px">Create Person</button>
       <div class="msg" id="create-msg"></div>
     </div>
-  </div>
-
-  <!-- Projects tab -->
-  <div class="tab-panel" id="tab-projects">
-    <div class="create-form" style="margin-bottom:20px">
-      <div class="section-title">New Project</div>
-      <div class="form-row">
-        <div class="field"><label>Project ID</label><input type="text" id="p-id" placeholder="tpi.akn.org.uk" /></div>
-        <div class="field"><label>Display Name</label><input type="text" id="p-name" placeholder="TPI" /></div>
-      </div>
-      <div class="field"><label>Description</label><input type="text" id="p-desc" placeholder="What is this project?" /></div>
-      <button class="btn" id="btn-create-project">Create Project</button>
-      <div class="msg" id="project-msg"></div>
-    </div>
-    <div class="card" id="projects-list-admin"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
 <div class="empty" id="loading" style="padding:80px">Loading…</div>
-<div class="empty" id="denied" style="display:none;padding:80px">Access denied.</div>
+<div class="empty" id="denied" style="display:none;padding:80px;color:#fca5a5">
+  Access denied. <a href="/" style="color:var(--btn-color)">Sign in</a>
+</div>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-import {
-  getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword,
-} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-import {
-  getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc,
-  serverTimestamp, query, orderBy, where, deleteDoc,
-} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
-
-const app = initializeApp({
-  apiKey: "AIzaSyDLWVxNsZveffKUaf07mRlrlouM_gyocmI",
-  authDomain: "aknid-me-uk.firebaseapp.com",
-  projectId: "aknid-me-uk",
-  storageBucket: "aknid-me-uk.firebasestorage.app",
-  messagingSenderId: "903162243588",
-  appId: "1:903162243588:web:053d5c3a06c0fb23ee6351",
-});
-const auth = getAuth(app);
-const db = getFirestore(app);
-const ADMIN_EMAIL = 'kabir.a@akn.me.uk';
-
-let allUsers = [], allRequests = [], allProjects = [];
-let createProjects = [];
-
-onAuthStateChanged(auth, async user => {
-  document.getElementById('loading').style.display = 'none';
-  if (!user || user.email !== ADMIN_EMAIL) {
-    document.getElementById('denied').style.display = '';
-    return;
-  }
-  document.getElementById('page').style.display = '';
-  document.getElementById('admin-email-display').textContent = user.email;
-  await loadAll();
-});
-
-async function loadAll() {
-  const [usersSnap, requestsSnap, projectsSnap] = await Promise.all([
-    getDocs(query(collection(db, 'users'), orderBy('createdAt', 'desc'))),
-    getDocs(query(collection(db, 'requests'), orderBy('createdAt', 'desc'))),
-    getDocs(collection(db, 'projects')),
-  ]);
-  allUsers = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-  allRequests = requestsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-  allProjects = projectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-  const pending = allUsers.filter(u => u.status === 'pending');
-  document.getElementById('stat-total').textContent = allUsers.length;
-  document.getElementById('stat-pending').textContent = pending.length;
-  document.getElementById('stat-requests').textContent = allRequests.filter(r => r.status === 'pending').length;
-
-  renderUsers(allUsers, 'users-list');
-  renderUsers(pending, 'pending-list');
-  renderRequests();
-  renderProjects();
-}
-
-function ts(val) {
-  if (!val) return '—';
-  const d = val.toDate ? val.toDate() : new Date(val);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function renderUsers(users, containerId) {
-  const el = document.getElementById(containerId);
-  if (!users.length) { el.innerHTML = '<div class="empty">None</div>'; return; }
-  el.innerHTML = users.map(u => `
-    <div class="user-row">
-      <div class="user-avatar">
-        ${u.photoURL ? `<img src="${u.photoURL}">` : (u.displayName || u.email || '?')[0].toUpperCase()}
+<!-- Edit Modal -->
+<div class="overlay" id="edit-overlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Edit Person</span>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <input type="hidden" id="edit-personId" />
+    <div class="form-row">
+      <div class="field"><label>Name</label><input type="text" id="edit-name" /></div>
+      <div class="field"><label>Email</label><input type="email" id="edit-email" /></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Status</label>
+        <select id="edit-status">
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
-      <div class="user-info">
-        <div class="user-name">${u.displayName || '—'}</div>
-        <div class="user-email">${u.email || u.phone || '—'}</div>
-        <div class="user-meta">Joined ${ts(u.createdAt)} · ${(u.projects||[]).join(', ') || 'no projects'}</div>
-      </div>
-      <span class="badge badge-${u.status}">${u.status}</span>
-      <div class="actions">
-        ${u.status !== 'approved' ? `<button class="btn btn-approve" onclick="setStatus('${u.id}','approved')">Approve</button>` : ''}
-        ${u.status !== 'rejected' ? `<button class="btn btn-reject" onclick="setStatus('${u.id}','rejected')">Reject</button>` : ''}
-        <button class="btn" onclick="editUser('${u.id}')">Edit</button>
+      <div class="field"><label>Role</label>
+        <select id="edit-role">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
       </div>
     </div>
-  `).join('');
-}
-
-function renderRequests() {
-  const el = document.getElementById('requests-list');
-  const pending = allRequests.filter(r => r.status === 'pending');
-  if (!pending.length) { el.innerHTML = '<div class="empty">No pending requests</div>'; return; }
-  el.innerHTML = pending.map(r => `
-    <div class="request-row">
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:500">${r.name || '—'}</div>
-        <div style="font-size:12px;color:var(--text-muted)">${r.email}</div>
-        ${r.reason ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px">"${r.reason}"</div>` : ''}
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${ts(r.createdAt)}</div>
-      </div>
-      <div class="actions">
-        <button class="btn btn-approve" onclick="approveRequest('${r.id}','${r.email}','${r.name||''}')">Approve</button>
-        <button class="btn btn-reject" onclick="dismissRequest('${r.id}')">Dismiss</button>
+    <div class="field">
+      <label>Projects</label>
+      <div class="tag-input-wrap" id="edit-projects-wrap">
+        <input class="tag-input" id="edit-projects-input" placeholder="project-id…" />
       </div>
     </div>
-  `).join('');
-}
-
-function renderProjects() {
-  const el = document.getElementById('projects-list-admin');
-  if (!allProjects.length) { el.innerHTML = '<div class="empty">No projects yet</div>'; return; }
-  el.innerHTML = allProjects.map(p => `
-    <div class="user-row">
-      <div class="user-info">
-        <div class="user-name">${p.id}</div>
-        <div class="user-email">${p.name || ''} ${p.description ? '· ' + p.description : ''}</div>
-        <div class="user-meta">${allUsers.filter(u => (u.projects||[]).includes(p.id) || (u.projects||[]).includes('*')).length} users</div>
+    <div class="field">
+      <label>Groups</label>
+      <div class="tag-input-wrap" id="edit-groups-wrap">
+        <input class="tag-input" id="edit-groups-input" placeholder="friends, family…" />
       </div>
-      <button class="btn btn-reject" onclick="deleteProject('${p.id}')">Delete</button>
     </div>
-  `).join('');
-}
+    <div class="field">
+      <label>Tags</label>
+      <div class="tag-input-wrap" id="edit-tags-wrap">
+        <input class="tag-input" id="edit-tags-input" placeholder="tag…" />
+      </div>
+    </div>
 
-window.setStatus = async (uid, status) => {
-  await updateDoc(doc(db, 'users', uid), { status });
-  await loadAll();
+    <!-- Linked identities -->
+    <div style="margin-top:16px">
+      <div class="section-title">Linked Identities</div>
+      <div id="edit-identities"><div class="empty" style="padding:12px 0">Loading…</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <input type="text" id="link-uid" placeholder="Firebase UID to link" style="flex:1;min-width:160px" />
+      <input type="text" id="link-provider" placeholder="provider (google.com)" style="width:150px" />
+      <button class="btn" id="btn-link-identity" style="flex-shrink:0">Link UID</button>
+    </div>
+    <div class="msg" id="link-msg"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btn-modal-reject">Set Rejected</button>
+      <button class="btn btn-approve" id="btn-modal-approve">Set Approved</button>
+      <button class="btn" id="btn-modal-save">Save Changes</button>
+    </div>
+    <div class="msg" id="edit-msg"></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.akn.me.uk';
+let allPeople = [];
+
+// Tags state
+const tagState = {
+  'c-projects': [], 'c-groups': [],
+  'edit-projects': [], 'edit-groups': [], 'edit-tags': [],
 };
 
-window.editUser = async (uid) => {
-  const u = allUsers.find(x => x.id === uid);
-  if (!u) return;
-  const projects = prompt('Projects (comma-separated):', (u.projects||[]).join(', '));
-  if (projects === null) return;
-  const role = prompt('Role (user/admin):', u.role || 'user');
-  if (role === null) return;
-  await updateDoc(doc(db, 'users', uid), {
-    projects: projects.split(',').map(s => s.trim()).filter(Boolean),
-    role: role.trim(),
-  });
-  await loadAll();
-};
-
-window.approveRequest = async (reqId, email, name) => {
-  await updateDoc(doc(db, 'requests', reqId), { status: 'approved' });
-  alert(`Request from ${email} approved. Create their account in the Create User tab.`);
-  await loadAll();
-};
-window.dismissRequest = async (reqId) => {
-  await updateDoc(doc(db, 'requests', reqId), { status: 'dismissed' });
-  await loadAll();
-};
-window.deleteProject = async (id) => {
-  if (!confirm(`Delete project "${id}"?`)) return;
-  await deleteDoc(doc(db, 'projects', id));
-  await loadAll();
-};
-
-// Create user (sets up Firestore doc — Firebase Auth account created on first login)
-document.getElementById('btn-create-user').addEventListener('click', async () => {
-  const email = document.getElementById('c-email').value.trim();
-  const name = document.getElementById('c-name').value.trim();
-  const role = document.getElementById('c-role').value;
-  const msg = document.getElementById('create-msg');
-  msg.className = 'msg'; msg.textContent = '';
-  if (!email) { msg.className = 'msg msg-err'; msg.textContent = 'Email is required'; return; }
-  const btn = document.getElementById('btn-create-user');
-  btn.disabled = true;
-  try {
-    // Pre-provision the user in Firestore — they'll be auto-approved on first sign-in
-    const uid = btoa(email).replace(/[^a-zA-Z0-9]/g,'').slice(0,28) + '_provisioned';
-    await setDoc(doc(db, 'users', uid), {
-      uid,
-      email,
-      displayName: name || null,
-      status: 'approved',
-      projects: createProjects,
-      role,
-      provisioned: true,
-      provisionedEmail: email,
-      createdAt: serverTimestamp(),
-      lastSeen: null,
-    });
-    msg.className = 'msg msg-ok'; msg.textContent = `Account provisioned for ${email}. They'll be auto-approved on first sign-in.`;
-    document.getElementById('c-email').value = '';
-    document.getElementById('c-name').value = '';
-    createProjects = [];
-    renderTags();
-    await loadAll();
-  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
-  btn.disabled = false;
-});
-
-// Create project
-document.getElementById('btn-create-project').addEventListener('click', async () => {
-  const id = document.getElementById('p-id').value.trim();
-  const name = document.getElementById('p-name').value.trim();
-  const desc = document.getElementById('p-desc').value.trim();
-  const msg = document.getElementById('project-msg');
-  if (!id) { msg.className = 'msg msg-err'; msg.textContent = 'Project ID is required'; return; }
-  await setDoc(doc(db, 'projects', id), { name, description: desc, createdAt: serverTimestamp() });
-  msg.className = 'msg msg-ok'; msg.textContent = `Project "${id}" created`;
-  document.getElementById('p-id').value = '';
-  document.getElementById('p-name').value = '';
-  document.getElementById('p-desc').value = '';
-  await loadAll();
-});
-
-// Tag input for projects
-function renderTags() {
-  const wrap = document.getElementById('c-projects-wrap');
-  const input = document.getElementById('c-projects-input');
+function renderTagWrap(key) {
+  const wrap = document.getElementById(`${key}-wrap`);
+  const input = document.getElementById(`${key}-input`);
   wrap.querySelectorAll('.tag').forEach(t => t.remove());
-  createProjects.forEach((p, i) => {
+  tagState[key].forEach((val, i) => {
     const tag = document.createElement('span');
     tag.className = 'tag';
-    tag.innerHTML = `${p} <button onclick="removeTag(${i})">×</button>`;
+    tag.innerHTML = `${escHtml(val)} <button type="button" data-i="${i}" data-key="${key}">×</button>`;
     wrap.insertBefore(tag, input);
   });
 }
-window.removeTag = (i) => { createProjects.splice(i, 1); renderTags(); };
-document.getElementById('c-projects-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault();
-    const val = e.target.value.trim().replace(',','');
-    if (val && !createProjects.includes(val)) { createProjects.push(val); renderTags(); }
-    e.target.value = '';
+
+function initTagInput(key) {
+  const input = document.getElementById(`${key}-input`);
+  const wrap = document.getElementById(`${key}-wrap`);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.trim().replace(/,$/, '');
+      if (val && !tagState[key].includes(val)) { tagState[key].push(val); renderTagWrap(key); }
+      e.target.value = '';
+    }
+    if (e.key === 'Backspace' && !e.target.value && tagState[key].length) {
+      tagState[key].pop(); renderTagWrap(key);
+    }
+  });
+  wrap.addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON' && e.target.dataset.key === key) {
+      tagState[key].splice(+e.target.dataset.i, 1);
+      renderTagWrap(key);
+    }
+    if (e.target === wrap) input.focus();
+  });
+  wrap.addEventListener('click', () => input.focus());
+}
+
+['c-projects','c-groups','edit-projects','edit-groups','edit-tags'].forEach(initTagInput);
+
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
+  return res.json();
+}
+
+// Auth check
+async function init() {
+  try {
+    const session = await api('/auth/session/refresh');
+    if (!session.authenticated) throw new Error('not authenticated');
+    if (session.role !== 'admin' && !session.projects?.includes('*')) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('denied').style.display = '';
+      return;
+    }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('page').style.display = '';
+    document.getElementById('admin-name').textContent = session.name || session.email || '';
+    await loadPeople();
+  } catch {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('denied').style.display = '';
   }
+}
+
+async function loadPeople() {
+  try {
+    const { people } = await api('/auth/people');
+    allPeople = people;
+    const pending = people.filter(p => p.status === 'pending');
+    const approved = people.filter(p => p.status === 'approved');
+    document.getElementById('stat-total').textContent = people.length;
+    document.getElementById('stat-pending').textContent = pending.length;
+    document.getElementById('stat-approved').textContent = approved.length;
+    renderPeopleList(people, 'people-list');
+    renderPeopleList(pending, 'pending-list');
+  } catch (e) {
+    document.getElementById('people-list').innerHTML = `<div class="empty">Error: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function renderPeopleList(people, containerId) {
+  const el = document.getElementById(containerId);
+  if (!people.length) { el.innerHTML = '<div class="empty">None</div>'; return; }
+  el.innerHTML = people.map(p => {
+    const initials = (p.name || p.email || '?')[0].toUpperCase();
+    const avatar = p.avatar
+      ? `<img src="${escHtml(p.avatar)}" onerror="this.style.display='none'">`
+      : initials;
+    const projs = (p.projects || []).join(', ') || 'no projects';
+    const groups = (p.groups || []).join(', ');
+    return `
+      <div class="person-row" onclick="openEdit('${escHtml(p.personId)}')">
+        <div class="person-avatar">${avatar}</div>
+        <div class="person-info">
+          <div class="person-name">${escHtml(p.name || '—')}</div>
+          <div class="person-email">${escHtml(p.email || '—')}</div>
+          <div class="person-meta">${escHtml(projs)}${groups ? ' · ' + escHtml(groups) : ''}</div>
+        </div>
+        ${p.role === 'admin' ? '<span class="badge badge-admin">admin</span>' : ''}
+        <span class="badge badge-${escHtml(p.status)}">${escHtml(p.status)}</span>
+        <div class="actions" onclick="event.stopPropagation()">
+          ${p.status !== 'approved' ? `<button class="btn btn-approve" onclick="quickStatus('${escHtml(p.personId)}','approved')">Approve</button>` : ''}
+          ${p.status !== 'rejected' ? `<button class="btn btn-reject" onclick="quickStatus('${escHtml(p.personId)}','rejected')">Reject</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+window.quickStatus = async (personId, status) => {
+  try {
+    await api(`/auth/people/${personId}`, { method: 'PATCH', body: { status } });
+    await loadPeople();
+  } catch (e) { alert(e.message); }
+};
+
+// Edit modal
+let editPersonId = null;
+let editState = { projects: [], groups: [], tags: [] };
+
+window.openEdit = async (personId) => {
+  editPersonId = personId;
+  const overlay = document.getElementById('edit-overlay');
+  overlay.classList.add('open');
+
+  // Find person in allPeople first for quick fill, then fetch full detail
+  const local = allPeople.find(p => p.personId === personId) || {};
+  fillEditForm(local, []);
+
+  try {
+    const data = await api(`/auth/people/${personId}`);
+    fillEditForm(data, data.identities || []);
+  } catch (e) {
+    document.getElementById('edit-msg').className = 'msg msg-err';
+    document.getElementById('edit-msg').textContent = e.message;
+  }
+};
+
+function fillEditForm(p, identities) {
+  document.getElementById('edit-personId').value = p.personId || editPersonId;
+  document.getElementById('edit-name').value = p.name || '';
+  document.getElementById('edit-email').value = p.email || '';
+  document.getElementById('edit-status').value = p.status || 'pending';
+  document.getElementById('edit-role').value = p.role || 'user';
+
+  tagState['edit-projects'] = [...(p.projects || [])];
+  tagState['edit-groups'] = [...(p.groups || [])];
+  tagState['edit-tags'] = [...(p.tags || [])];
+  renderTagWrap('edit-projects');
+  renderTagWrap('edit-groups');
+  renderTagWrap('edit-tags');
+
+  // Identities
+  const idEl = document.getElementById('edit-identities');
+  if (!identities.length) {
+    idEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:4px 0">No linked identities</div>';
+  } else {
+    idEl.innerHTML = identities.map(id => `
+      <div class="identity-row">
+        <span class="identity-uid">${escHtml(id.uid)}</span>
+        <span style="font-size:11px;color:var(--text-muted)">${escHtml(id.provider || '')}</span>
+        <span style="font-size:11px;color:var(--text-muted)">${escHtml(id.email || '')}</span>
+        <button class="btn btn-danger" onclick="unlinkIdentity('${escHtml(id.uid)}')" style="padding:3px 8px;font-size:11px">Unlink</button>
+      </div>`).join('');
+  }
+
+  document.getElementById('edit-msg').textContent = '';
+  document.getElementById('link-msg').textContent = '';
+  document.getElementById('link-uid').value = '';
+  document.getElementById('link-provider').value = '';
+}
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('edit-overlay').classList.remove('open');
+});
+document.getElementById('edit-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('edit-overlay'))
+    document.getElementById('edit-overlay').classList.remove('open');
+});
+
+document.getElementById('btn-modal-save').addEventListener('click', async () => {
+  const pid = editPersonId;
+  const body = {
+    name: document.getElementById('edit-name').value.trim() || undefined,
+    email: document.getElementById('edit-email').value.trim() || undefined,
+    status: document.getElementById('edit-status').value,
+    role: document.getElementById('edit-role').value,
+    projects: tagState['edit-projects'],
+    groups: tagState['edit-groups'],
+    tags: tagState['edit-tags'],
+  };
+  const msg = document.getElementById('edit-msg');
+  try {
+    await api(`/auth/people/${pid}`, { method: 'PATCH', body });
+    msg.className = 'msg msg-ok'; msg.textContent = 'Saved';
+    await loadPeople();
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+});
+
+document.getElementById('btn-modal-approve').addEventListener('click', async () => {
+  document.getElementById('edit-status').value = 'approved';
+  document.getElementById('btn-modal-save').click();
+});
+document.getElementById('btn-modal-reject').addEventListener('click', async () => {
+  document.getElementById('edit-status').value = 'rejected';
+  document.getElementById('btn-modal-save').click();
+});
+
+// Link identity
+document.getElementById('btn-link-identity').addEventListener('click', async () => {
+  const uid = document.getElementById('link-uid').value.trim();
+  const provider = document.getElementById('link-provider').value.trim() || 'google.com';
+  const msg = document.getElementById('link-msg');
+  if (!uid) { msg.className = 'msg msg-err'; msg.textContent = 'UID is required'; return; }
+  try {
+    await api(`/auth/people/${editPersonId}/link`, { method: 'POST', body: { uid, provider } });
+    msg.className = 'msg msg-ok'; msg.textContent = 'Identity linked';
+    document.getElementById('link-uid').value = '';
+    // Refresh identities
+    const data = await api(`/auth/people/${editPersonId}`);
+    fillEditForm(data, data.identities || []);
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+});
+
+window.unlinkIdentity = async (uid) => {
+  if (!confirm(`Unlink identity ${uid}?`)) return;
+  const msg = document.getElementById('link-msg');
+  try {
+    await api(`/auth/people/${editPersonId}/identity/${uid}`, { method: 'DELETE' });
+    msg.className = 'msg msg-ok'; msg.textContent = 'Identity unlinked';
+    const data = await api(`/auth/people/${editPersonId}`);
+    fillEditForm(data, data.identities || []);
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+};
+
+// Create person
+document.getElementById('btn-create-person').addEventListener('click', async () => {
+  const name = document.getElementById('c-name').value.trim();
+  const msg = document.getElementById('create-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  if (!name) { msg.className = 'msg msg-err'; msg.textContent = 'Name is required'; return; }
+  const btn = document.getElementById('btn-create-person');
+  btn.disabled = true;
+  try {
+    const { personId } = await api('/auth/people', {
+      method: 'POST',
+      body: {
+        name,
+        email: document.getElementById('c-email').value.trim() || undefined,
+        status: document.getElementById('c-status').value,
+        role: document.getElementById('c-role').value,
+        projects: tagState['c-projects'],
+        groups: tagState['c-groups'],
+      }
+    });
+    msg.className = 'msg msg-ok'; msg.textContent = `Person created (${personId})`;
+    document.getElementById('c-name').value = '';
+    document.getElementById('c-email').value = '';
+    tagState['c-projects'] = []; renderTagWrap('c-projects');
+    tagState['c-groups'] = []; renderTagWrap('c-groups');
+    await loadPeople();
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+  btn.disabled = false;
 });
 
 // Tabs
@@ -410,9 +525,13 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-document.getElementById('btn-signout').addEventListener('click', () =>
-  signOut(auth).then(() => location.href = '/')
-);
+// Sign out
+document.getElementById('btn-signout').addEventListener('click', async () => {
+  await fetch(API + '/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+  location.href = '/';
+});
+
+init();
 </script>
 </body>
 </html>
