@@ -113,6 +113,12 @@ input::placeholder { color: var(--text-muted); }
     <div class="stat-card"><div class="stat-num" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
   </div>
 
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px">
+    <button class="btn" id="btn-sync-firebase">Sync All Firebase Users</button>
+    <button class="btn" id="btn-sync-carddav">Sync CardDAV Contacts</button>
+    <span class="msg" id="sync-msg" style="margin:0"></span>
+  </div>
+
   <div class="tabs">
     <button class="tab active" data-tab="people">All People</button>
     <button class="tab" data-tab="pending">Pending</button>
@@ -443,8 +449,16 @@ document.getElementById('btn-modal-save').addEventListener('click', async () => 
   };
   const msg = document.getElementById('edit-msg');
   try {
-    await api(`/auth/people/${pid}`, { method: 'PATCH', body });
-    msg.className = 'msg msg-ok'; msg.textContent = 'Saved';
+    const result = await api(`/auth/people/${pid}`, { method: 'PATCH', body });
+    const syncedCount = (result.syncedFirebase || []).length;
+    const syncErrCount = (result.firebaseSyncErrors || []).length;
+    if (syncedCount || syncErrCount) {
+      msg.className = syncErrCount ? 'msg msg-err' : 'msg msg-ok';
+      msg.textContent = `Saved. Firebase sync: ${syncedCount} updated${syncErrCount ? `, ${syncErrCount} failed` : ''}`;
+    } else {
+      msg.className = 'msg msg-ok';
+      msg.textContent = 'Saved';
+    }
     await loadPeople();
   } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
 });
@@ -461,7 +475,7 @@ document.getElementById('btn-modal-reject').addEventListener('click', async () =
 // Link identity
 document.getElementById('btn-link-identity').addEventListener('click', async () => {
   const uid = document.getElementById('link-uid').value.trim();
-  const provider = document.getElementById('link-provider').value.trim() || 'google.com';
+  const provider = document.getElementById('link-provider').value.trim() || 'password';
   const msg = document.getElementById('link-msg');
   if (!uid) { msg.className = 'msg msg-err'; msg.textContent = 'UID is required'; return; }
   try {
@@ -512,6 +526,43 @@ document.getElementById('btn-create-person').addEventListener('click', async () 
     tagState['c-groups'] = []; renderTagWrap('c-groups');
     await loadPeople();
   } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+  btn.disabled = false;
+});
+
+document.getElementById('btn-sync-firebase').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-sync-firebase');
+  const msg = document.getElementById('sync-msg');
+  btn.disabled = true;
+  msg.className = 'msg';
+  msg.textContent = 'Syncing…';
+  try {
+    const out = await api('/auth/sync/firebase', { method: 'POST' });
+    msg.className = 'msg msg-ok';
+    msg.textContent = `Done. Scanned ${out.scanned}, linked ${out.linked}, created ${out.createdPeople}, refreshed ${out.updatedIdentities} identities.`;
+    await loadPeople();
+  } catch (e) {
+    msg.className = 'msg msg-err';
+    msg.textContent = e.message;
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('btn-sync-carddav').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-sync-carddav');
+  const msg = document.getElementById('sync-msg');
+  btn.disabled = true;
+  msg.className = 'msg';
+  msg.textContent = 'Syncing CardDAV…';
+  try {
+    const out = await api('/auth/sync/carddav', { method: 'POST' });
+    const errs = (out.syncErrors || []).length;
+    msg.className = errs ? 'msg msg-err' : 'msg msg-ok';
+    msg.textContent = `CardDAV done. Contacts ${out.scanned}, people updated ${out.updatedPeople}, created ${out.createdPeople}, Firebase synced ${out.syncedFirebase}${errs ? `, errors ${errs}` : ''}.`;
+    await loadPeople();
+  } catch (e) {
+    msg.className = 'msg msg-err';
+    msg.textContent = e.message;
+  }
   btn.disabled = false;
 });
 
