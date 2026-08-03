@@ -92,7 +92,25 @@ input::placeholder { color: var(--text-muted); }
         </button>
       </div>
       <div class="error-msg" id="signin-error"></div>
+      <div class="toggle"><a id="link-to-otp">Sign in with email code</a></div>
       <div class="toggle">No account? <a id="link-to-request">Request access</a></div>
+    </div>
+
+    <!-- Sign in with OTP -->
+    <div id="view-signin-otp" style="display:none">
+      <div class="card-title">Sign in with email</div>
+      <div class="card-sub">We'll send a code to your email</div>
+      <div class="field"><input type="email" id="otp-signin-email" placeholder="Email" autocomplete="email" /></div>
+      <button class="btn" id="btn-send-signin-otp">Send code</button>
+      <div id="otp-signin-verify" style="display:none;margin-top:16px">
+        <div class="field">
+          <input type="text" id="otp-signin-code" placeholder="6-digit code" maxlength="6" style="font-family:monospace;font-size:18px;text-align:center;letter-spacing:4px" />
+        </div>
+        <button class="btn" id="btn-verify-signin-otp">Verify & Sign In</button>
+      </div>
+      <div class="error-msg" id="otp-signin-error"></div>
+      <div class="success-msg" id="otp-signin-success"></div>
+      <div class="toggle"><a id="link-otp-back">Back to Sign In</a></div>
     </div>
 
     <!-- Phone -->
@@ -329,6 +347,119 @@ document.getElementById('btn-verify-otp').addEventListener('click', async () => 
   btn.disabled = true;
   try { await confirmationResult.confirm(code); }
   catch (e) { btn.disabled = false; setError('phone-error', friendlyError(e.code)); }
+});
+
+
+// OTP Sign In
+document.getElementById('link-to-otp').addEventListener('click', () => showView('signin-otp'));
+document.getElementById('link-otp-back').addEventListener('click', () => showView('signin'));
+
+let otpSignInSent = false;
+let otpSignInEmail = '';
+
+document.getElementById('btn-send-signin-otp').addEventListener('click', async () => {
+  const email = document.getElementById('otp-signin-email').value.trim();
+  if (!email || !email.includes('@')) {
+    setError('otp-signin-error', 'Please enter a valid email');
+    return;
+  }
+  
+  const btn = document.getElementById('btn-send-signin-otp');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  setError('otp-signin-error', '');
+  document.getElementById('otp-signin-success').textContent = '';
+  
+  try {
+    const res = await fetch('https://api.akn.me.uk/auth/otp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, purpose: 'signin' }),
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      document.getElementById('otp-signin-success').textContent = '✓ Code sent to ' + email;
+      document.getElementById('otp-signin-verify').style.display = 'block';
+      document.getElementById('otp-signin-code').focus();
+      otpSignInSent = true;
+      otpSignInEmail = email;
+      btn.textContent = 'Resend code';
+    } else {
+      setError('otp-signin-error', data.error || 'Failed to send code');
+      btn.textContent = 'Send code';
+    }
+  } catch (err) {
+    setError('otp-signin-error', 'Network error: ' + err.message);
+    btn.textContent = 'Send code';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('btn-verify-signin-otp').addEventListener('click', async () => {
+  const otp = document.getElementById('otp-signin-code').value.trim();
+  
+  if (!otpSignInSent || !otpSignInEmail) {
+    setError('otp-signin-error', 'Please send a code first');
+    return;
+  }
+  
+  if (!otp || otp.length !== 6) {
+    setError('otp-signin-error', 'Please enter the 6-digit code');
+    return;
+  }
+  
+  const btn = document.getElementById('btn-verify-signin-otp');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  setError('otp-signin-error', '');
+  
+  try {
+    // Verify OTP
+    const verifyRes = await fetch('https://api.akn.me.uk/auth/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: otpSignInEmail, otp, purpose: 'signin' }),
+    });
+    
+    const verifyData = await verifyRes.json();
+    
+    if (!verifyRes.ok || !verifyData.valid) {
+      setError('otp-signin-error', verifyData.error || 'Invalid code');
+      btn.disabled = false;
+      btn.textContent = 'Verify & Sign In';
+      return;
+    }
+    
+    // OTP verified! Now get or create custom token
+    const tokenRes = await fetch('https://api.akn.me.uk/auth/otp/sign-in', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: otpSignInEmail, otp }),
+    });
+    
+    const tokenData = await tokenRes.json();
+    
+    if (!tokenRes.ok) {
+      setError('otp-signin-error', tokenData.error || 'Sign-in failed');
+      btn.disabled = false;
+      btn.textContent = 'Verify & Sign In';
+      return;
+    }
+    
+    // Sign in with custom token
+    await signInWithCustomToken(auth, tokenData.customToken);
+    
+    document.getElementById('otp-signin-success').textContent = '✓ Signed in!';
+    setTimeout(() => showView('loading'), 500);
+    
+  } catch (err) {
+    setError('otp-signin-error', 'Error: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Verify & Sign In';
+  }
 });
 
 // Request access
