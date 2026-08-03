@@ -222,12 +222,43 @@ input::placeholder { color: var(--text-muted); }
       <div class="section-title">Linked Identities</div>
       <div id="edit-identities"><div class="empty" style="padding:12px 0">Loading…</div></div>
     </div>
+    
+    <!-- Link via UID -->
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
       <input type="text" id="link-uid" placeholder="Firebase UID to link" style="flex:1;min-width:160px" />
       <input type="text" id="link-provider" placeholder="provider (google.com)" style="width:150px" />
       <button class="btn" id="btn-link-identity" style="flex-shrink:0">Link UID</button>
     </div>
+    
+    <!-- Link via Email OTP -->
+    <div style="margin-top:12px;padding:12px;background:#f8f9fa;border-radius:6px">
+      <div style="font-weight:500;margin-bottom:8px">🔗 Link via Email OTP</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="email" id="link-email-otp" placeholder="email@example.com" style="flex:1;min-width:160px" />
+        <button class="btn" id="btn-send-otp" onclick="sendLinkOTP()">Send OTP</button>
+      </div>
+      <div id="otp-verify-section" style="display:none;margin-top:12px">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="link-otp-code" placeholder="6-digit code" maxlength="6" style="width:120px;font-family:monospace;font-size:18px;text-align:center" />
+          <button class="btn" id="btn-verify-otp" onclick="verifyLinkOTP()">Verify & Link</button>
+        </div>
+      </div>
+    </div>
+    
     <div class="msg" id="link-msg"></div>
+    
+    <!-- Secondary Emails & Phone Numbers -->
+    <div style="margin-top:24px">
+      <div class="section-title">Secondary Emails & Phone Numbers</div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;margin-bottom:4px;font-size:13px;color:#666">Secondary Emails (one per line)</label>
+        <textarea id="edit-secondary-emails" rows="3" placeholder="email1@example.com&#10;email2@example.com" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:13px"></textarea>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:4px;font-size:13px;color:#666">Phone Numbers (one per line, E.164 format)</label>
+        <textarea id="edit-phone-numbers" rows="2" placeholder="+447123456789&#10;+14155551234" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:13px"></textarea>
+      </div>
+    </div>
 
     <div class="modal-footer">
       <button class="btn btn-danger" id="btn-modal-reject">Set Rejected</button>
@@ -408,6 +439,10 @@ function fillEditForm(p, identities) {
   renderTagWrap('edit-groups');
   renderTagWrap('edit-tags');
 
+  // Secondary emails and phone numbers
+  document.getElementById('edit-secondary-emails').value = (p.secondaryEmails || []).join('\n');
+  document.getElementById('edit-phone-numbers').value = (p.phoneNumbers || []).join('\n');
+
   // Identities
   const idEl = document.getElementById('edit-identities');
   if (!identities.length) {
@@ -446,6 +481,8 @@ document.getElementById('btn-modal-save').addEventListener('click', async () => 
     projects: tagState['edit-projects'],
     groups: tagState['edit-groups'],
     tags: tagState['edit-tags'],
+    secondaryEmails: document.getElementById('edit-secondary-emails').value.split('\n').map(e => e.trim()).filter(Boolean),
+    phoneNumbers: document.getElementById('edit-phone-numbers').value.split('\n').map(p => p.trim()).filter(Boolean),
   };
   const msg = document.getElementById('edit-msg');
   try {
@@ -581,6 +618,103 @@ document.getElementById('btn-signout').addEventListener('click', async () => {
   await fetch(API + '/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
   location.href = '/';
 });
+
+
+// ============= EMAIL OTP LINKING =============
+async function sendLinkOTP() {
+  const emailInput = document.getElementById('link-email-otp');
+  const email = emailInput.value.trim();
+  const btn = document.getElementById('btn-send-otp');
+  const msg = document.getElementById('link-msg');
+  
+  if (!email || !email.includes('@')) {
+    msg.className = 'msg error';
+    msg.textContent = 'Please enter a valid email address';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  msg.className = 'msg';
+  msg.textContent = '';
+  
+  try {
+    const res = await fetch(`${API}/auth/otp/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, purpose: 'link' }),
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      msg.className = 'msg success';
+      msg.textContent = '✓ Code sent to ' + email;
+      document.getElementById('otp-verify-section').style.display = 'block';
+      document.getElementById('link-otp-code').focus();
+    } else {
+      msg.className = 'msg error';
+      msg.textContent = data.error || 'Failed to send code';
+    }
+  } catch (err) {
+    msg.className = 'msg error';
+    msg.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send OTP';
+  }
+}
+
+async function verifyLinkOTP() {
+  const email = document.getElementById('link-email-otp').value.trim();
+  const otp = document.getElementById('link-otp-code').value.trim();
+  const personId = currentEditPerson?.id;
+  const btn = document.getElementById('btn-verify-otp');
+  const msg = document.getElementById('link-msg');
+  
+  if (!email || !otp || !personId) {
+    msg.className = 'msg error';
+    msg.textContent = 'Missing required fields';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  msg.className = 'msg';
+  msg.textContent = '';
+  
+  try {
+    const res = await fetch(`${API}/auth/otp/verify-and-link`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp, personId }),
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      msg.className = 'msg success';
+      msg.textContent = '✓ Email linked successfully! UID: ' + data.uid;
+      
+      // Clear inputs
+      document.getElementById('link-email-otp').value = '';
+      document.getElementById('link-otp-code').value = '';
+      document.getElementById('otp-verify-section').style.display = 'none';
+      
+      // Refresh person data
+      setTimeout(() => openPersonModal(currentEditPerson), 1000);
+    } else {
+      msg.className = 'msg error';
+      msg.textContent = data.error || 'Verification failed';
+    }
+  } catch (err) {
+    msg.className = 'msg error';
+    msg.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Verify & Link';
+  }
+}
 
 init();
 </script>

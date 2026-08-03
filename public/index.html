@@ -119,7 +119,19 @@ input::placeholder { color: var(--text-muted); }
       <div class="field"><input type="email" id="req-email" placeholder="Email" autocomplete="email" /></div>
       <div class="field"><input type="text" id="req-name" placeholder="Name" autocomplete="name" /></div>
       <div class="field"><input type="text" id="req-reason" placeholder="Why do you want access?" /></div>
-      <button class="btn" id="btn-request">Send Request</button>
+      
+      <!-- OTP Step -->
+      <div id="otp-group" style="margin-top:16px;padding:16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px">Verify your email</div>
+        <button class="btn" id="btn-send-request-otp" style="margin-bottom:8px">Send verification code</button>
+        <div id="otp-input-group" style="display:none">
+          <div class="field" style="margin-bottom:8px">
+            <input type="text" id="req-otp" placeholder="6-digit code" maxlength="6" style="font-family:monospace;font-size:16px;text-align:center;letter-spacing:4px" />
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn" id="btn-request" style="margin-top:12px">Send Request</button>
       <div class="error-msg" id="request-error"></div>
       <div class="success-msg" id="request-success"></div>
       <div class="toggle"><a id="link-req-back">Back to Sign In</a></div>
@@ -322,23 +334,108 @@ document.getElementById('btn-verify-otp').addEventListener('click', async () => 
 // Request access
 document.getElementById('link-to-request').addEventListener('click', () => showView('request'));
 document.getElementById('link-req-back').addEventListener('click', () => showView('signin'));
+
+// Send OTP for request access
+let requestOtpSent = false;
+document.getElementById('btn-send-request-otp').addEventListener('click', async () => {
+  const email = document.getElementById('req-email').value.trim();
+  if (!email || !email.includes('@')) {
+    setError('request-error', 'Please enter a valid email first');
+    return;
+  }
+  
+  const btn = document.getElementById('btn-send-request-otp');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  setError('request-error', '');
+  document.getElementById('request-success').textContent = '';
+  
+  try {
+    const res = await fetch('https://api.akn.me.uk/auth/otp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, purpose: 'request-access' }),
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      document.getElementById('request-success').textContent = '✓ Code sent to ' + email;
+      document.getElementById('otp-input-group').style.display = 'block';
+      document.getElementById('req-otp').focus();
+      requestOtpSent = true;
+      btn.textContent = 'Resend code';
+    } else {
+      setError('request-error', data.error || 'Failed to send code');
+      btn.textContent = 'Send verification code';
+    }
+  } catch (err) {
+    setError('request-error', 'Network error: ' + err.message);
+    btn.textContent = 'Send verification code';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 document.getElementById('btn-request').addEventListener('click', async () => {
   const email = document.getElementById('req-email').value.trim();
   const name = document.getElementById('req-name').value.trim();
   const reason = document.getElementById('req-reason').value.trim();
+  const otp = document.getElementById('req-otp').value.trim();
+  
   setError('request-error', '');
   document.getElementById('request-success').textContent = '';
+  
   if (!email) return setError('request-error', 'Email is required');
+  if (!requestOtpSent) return setError('request-error', 'Please verify your email first');
+  if (!otp || otp.length !== 6) return setError('request-error', 'Please enter the 6-digit code');
+  
   const btn = document.getElementById('btn-request');
   btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  
   try {
-    await addDoc(collection(db, 'requests'), { email, name, reason, createdAt: serverTimestamp(), status: 'pending' });
-    document.getElementById('request-success').textContent = "Request sent — you'll hear back soon";
+    // Verify OTP first
+    const verifyRes = await fetch('https://api.akn.me.uk/auth/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp, purpose: 'request-access' }),
+    });
+    
+    const verifyData = await verifyRes.json();
+    
+    if (!verifyRes.ok || !verifyData.valid) {
+      setError('request-error', verifyData.error || 'Invalid code');
+      btn.disabled = false;
+      btn.textContent = 'Send Request';
+      return;
+    }
+    
+    // OTP verified! Now create the request
+    await addDoc(collection(db, 'requests'), {
+      email,
+      name,
+      reason,
+      createdAt: serverTimestamp(),
+      status: 'pending',
+      emailVerified: true,
+    });
+    
+    document.getElementById('request-success').textContent = "✓ Request sent — you'll hear back soon";
     document.getElementById('req-email').value = '';
     document.getElementById('req-name').value = '';
     document.getElementById('req-reason').value = '';
-  } catch { setError('request-error', 'Something went wrong, try again'); }
-  btn.disabled = false;
+    document.getElementById('req-otp').value = '';
+    document.getElementById('otp-input-group').style.display = 'none';
+    requestOtpSent = false;
+    document.getElementById('btn-send-request-otp').textContent = 'Send verification code';
+    
+  } catch (err) {
+    setError('request-error', 'Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send Request';
+  }
 });
 
 // Pending/rejected logout
