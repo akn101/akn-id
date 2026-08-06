@@ -12,15 +12,35 @@ service cloud.firestore {
     }
 
     // Users collection
+    //
+    // NOTE: this collection is authorization data, not profile data — akn-api's
+    // oidc.js and status.js read `role`, `status` and `projects` from here to
+    // decide who may reach Nextcloud and the other projects. A client must never
+    // be able to set those three fields for itself, on create OR update.
     match /users/{uid} {
       // Users can read their own doc
       allow read: if isOwner(uid) || isAdmin();
-      // Users can create their own doc (on first sign-in)
-      allow create: if isOwner(uid);
-      // Users can update their own profile fields only (not status/projects)
+
+      // Users can create their own doc (on first sign-in), but only as an
+      // unprivileged, unapproved account.
+      //
+      // This previously read `allow create: if isOwner(uid)` with no constraint
+      // on the payload. Because create was unconstrained while update was not, a
+      // caller could skip the sign-in page, write users/{ownUid} directly via the
+      // SDK or REST API on first sign-in, and self-assign
+      // status:'approved', role:'admin', projects:['*'] — granting themselves
+      // every project, including Nextcloud. Elevation is a server-side action:
+      // the Admin SDK bypasses these rules entirely.
+      allow create: if isOwner(uid)
+        && request.resource.data.get('status', 'pending') == 'pending'
+        && request.resource.data.get('role', 'user') == 'user'
+        && request.resource.data.get('projects', []).size() == 0;
+
+      // Users can update their own profile fields only (not status/projects/role)
       allow update: if isOwner(uid)
         && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['status', 'projects', 'role']);
+
       // Only admin can do anything
       allow write: if isAdmin();
     }
@@ -32,9 +52,26 @@ service cloud.firestore {
     }
 
     // Access requests (unauthenticated users can create)
+    //
+    // Deliberately open to create so a stranger can ask for access. Bounded so a
+    // single request cannot be used to write arbitrary documents: only the four
+    // expected fields, only 'pending', and length-capped so the collection cannot
+    // be used as free storage.
     match /requests/{requestId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasOnly(['email', 'name', 'reason', 'status', 'createdAt'])
+        && request.resource.data.get('status', '') == 'pending'
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.email.size() < 320
+        && request.resource.data.get('name', '').size() < 200
+        && request.resource.data.get('reason', '').size() < 2000;
       allow read, update, delete: if isAdmin();
     }
+
+    // people/, identities/ and identifiers/ are deliberately absent, so they
+    // default-deny to all clients and are reachable only by the Admin SDK in
+    // akn-api. identifiers/ in particular is the join table that decides which
+    // person a login resolves to — client write access to it would be an
+    // account-takeover primitive.
   }
 }
