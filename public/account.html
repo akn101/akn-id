@@ -173,6 +173,9 @@ input[readonly] { opacity: 0.5; cursor: not-allowed; }
   <div class="section" style="margin-top:32px">
     <div class="section-title">Sign-in Methods</div>
     <div class="card" id="providers-list"></div>
+    <!-- Invisible reCAPTCHA anchor for phone linking. Firebase requires a real
+         element in the DOM before linkWithPhoneNumber will send an SMS. -->
+    <div id="recaptcha-holder"></div>
   </div>
 
   <!-- Danger zone -->
@@ -191,6 +194,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebas
 import {
   getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, OAuthProvider,
   linkWithPopup, unlink, deleteUser,
+  RecaptchaVerifier, linkWithPhoneNumber,
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore, doc, getDoc, setDoc, serverTimestamp,
@@ -207,11 +211,20 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Linking here is what makes one human ONE account. Each provider produces a
+// different Firebase uid, and akn-api's identifier index only merges on an
+// identifier the user has PROVEN control of — so a brand-new sign-in with an
+// unseen phone or LinkedIn account resolves to nobody and would become a second
+// person. Linking from an already-signed-in session attaches the new identifier
+// to the SAME uid, which is the only safe way to converge them.
 const PROVIDERS = [
   { id: 'google.com', label: 'Google', Provider: GoogleAuthProvider },
   { id: 'apple.com', label: 'Apple', Provider: () => new OAuthProvider('apple.com') },
+  { id: 'linkedin.com', label: 'LinkedIn', Provider: () => new OAuthProvider('linkedin.com') },
   { id: 'password', label: 'Email / Password', Provider: null },
-  { id: 'phone', label: 'Phone Number', Provider: null },
+  // Phone cannot use linkWithPopup — it needs a reCAPTCHA and an SMS round trip,
+  // so it has its own handler below rather than a Provider constructor.
+  { id: 'phone', label: 'Phone Number', Provider: null, link: 'phone' },
 ];
 
 onAuthStateChanged(auth, async user => {
@@ -279,8 +292,8 @@ onAuthStateChanged(auth, async user => {
         <span class="provider-dot ${linked.includes(p.id) ? 'dot-linked' : 'dot-unlinked'}"></span>
         ${p.label}
       </div>
-      ${p.Provider && !linked.includes(p.id)
-        ? `<button class="btn" onclick="linkProvider('${p.id}')">Link</button>`
+      ${(p.Provider || p.link === 'phone') && !linked.includes(p.id)
+        ? `<button class="btn" onclick="${p.link === 'phone' ? 'linkPhone()' : `linkProvider('${p.id}')`}">Link</button>`
         : linked.includes(p.id) && linked.length > 1 && p.Provider
           ? `<button class="btn btn-danger" onclick="unlinkProvider('${p.id}')">Unlink</button>`
           : `<span style="font-size:12px;color:var(--text-muted)">${linked.includes(p.id) ? 'Active' : '—'}</span>`
@@ -329,7 +342,48 @@ window.linkProvider = async (id) => {
     const p = id === 'google.com' ? new GoogleAuthProvider() : new OAuthProvider(id);
     await linkWithPopup(user, p);
     location.reload();
-  } catch (e) { alert(e.message); }
+  } catch (e) {
+    // operation-not-allowed means the provider exists in Firebase but has no
+    // credentials yet — worth saying plainly instead of showing the raw SDK text.
+    alert(e.code === 'auth/operation-not-allowed'
+      ? `${id} is not configured yet — add its client ID and secret to Firebase Authentication first.`
+      : e.code === 'auth/credential-already-in-use'
+        ? `That ${id} account is already linked to a different akn ID account.`
+        : e.message);
+  }
+};
+// Phone linking: reCAPTCHA -> SMS -> code. linkWithPhoneNumber attaches the
+// number to the CURRENT uid rather than creating a new user, which is the whole
+// point — afterwards, signing in by phone resolves to this same person.
+let recaptcha = null;
+window.linkPhone = async () => {
+  const user = auth.currentUser;
+  const number = (prompt('Mobile number in full international format, e.g. +447700900000') || '').trim();
+  if (!number) return;
+  if (!/^\+[1-9]\d{6,14}$/.test(number)) {
+    alert('That is not a valid E.164 number. It must start with + and the country code.');
+    return;
+  }
+  try {
+    // One verifier per page: re-creating it on a second attempt throws
+    // "reCAPTCHA has already been rendered in this element".
+    if (!recaptcha) {
+      recaptcha = new RecaptchaVerifier(auth, 'recaptcha-holder', { size: 'invisible' });
+      await recaptcha.render();
+    }
+    const confirmation = await linkWithPhoneNumber(user, number, recaptcha);
+    const code = (prompt(`Enter the 6-digit code sent to ${number}`) || '').trim();
+    if (!code) return;
+    await confirmation.confirm(code);
+    location.reload();
+  } catch (e) {
+    // A failed attempt leaves the verifier in a state that rejects the next one.
+    try { recaptcha?.clear(); } catch {}
+    recaptcha = null;
+    alert(e.code === 'auth/credential-already-in-use'
+      ? 'That number is already linked to a different akn ID account.'
+      : e.message);
+  }
 };
 window.unlinkProvider = async (id) => {
   if (!confirm(`Unlink ${id}?`)) return;
