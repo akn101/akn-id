@@ -253,8 +253,34 @@ onAuthStateChanged(auth, async user => {
     avatarWrap.innerHTML = `<div class="avatar-placeholder">${initial}</div>`;
   }
 
+  // Profile fields still live in users/{uid}; access does NOT.
+  //
+  // Status, role and projects belong to the PERSON, and a person is reached
+  // through identities/ or the verified identifier index — not through a
+  // per-uid document. Reading them from users/{uid} showed "pending / no
+  // projects" for every sign-in method whose uid is not a plain Firebase
+  // provider uid (Zitadel, Steam, email OTP), even for an approved admin.
+  // Same bug the login page had.
   const snap = await getDoc(doc(db, 'users', user.uid));
   const data = snap.exists() ? snap.data() : {};
+
+  try {
+    const idToken = await user.getIdToken();
+    const res = await fetch('https://api.akn.me.uk/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ idToken, project: 'halcyon' }),
+    });
+    if (res.ok) {
+      const v = await res.json();
+      data.status = v.approved ? 'approved' : (v.reason || 'pending');
+      data.projects = v.projects ?? data.projects;
+      data.role = v.role ?? data.role;
+      if (v.name && !data.displayName) data.displayName = v.name;
+      if (v.email) data.email = v.email;
+    }
+  } catch { /* fall back to whatever users/{uid} had */ }
 
   // Header
   document.getElementById('greeting').textContent = data.displayName || user.displayName || 'My Account';
