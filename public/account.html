@@ -193,7 +193,7 @@ input[readonly] { opacity: 0.5; cursor: not-allowed; }
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
   getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, OAuthProvider,
-  linkWithPopup, unlink, deleteUser,
+  linkWithPopup, linkWithRedirect, getRedirectResult, unlink, deleteUser,
   RecaptchaVerifier, linkWithPhoneNumber,
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
@@ -226,6 +226,18 @@ const PROVIDERS = [
   // so it has its own handler below rather than a Provider constructor.
   { id: 'phone', label: 'Phone Number', Provider: null, link: 'phone' },
 ];
+
+// Collect the outcome of a linkWithRedirect before anything else renders.
+// Without this the user comes back from the provider to a page that silently
+// looks unchanged, whether the link succeeded or failed.
+getRedirectResult(auth).catch(e => {
+  if (!e?.code) return;
+  alert(e.code === 'auth/credential-already-in-use'
+    ? 'That account is already linked to a different akn ID account.'
+    : e.code === 'auth/operation-not-allowed'
+      ? 'That provider is not configured yet — add its client ID and secret to Firebase Authentication first.'
+      : e.message);
+});
 
 onAuthStateChanged(auth, async user => {
   if (!user) { location.href = '/'; return; }
@@ -340,7 +352,19 @@ window.linkProvider = async (id) => {
   const user = auth.currentUser;
   try {
     const p = id === 'google.com' ? new GoogleAuthProvider() : new OAuthProvider(id);
-    await linkWithPopup(user, p);
+    try {
+      await linkWithPopup(user, p);
+    } catch (e) {
+      // Popups are blocked by default in several browsers and in embedded
+      // webviews, and iOS Safari closes them unpredictably. Redirect always
+      // works; it just costs a page load. Fall back rather than dead-ending.
+      if (['auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/cancelled-popup-request',
+           'auth/operation-not-supported-in-this-environment'].includes(e.code)) {
+        await linkWithRedirect(user, p);
+        return; // navigating away; the result is picked up on return
+      }
+      throw e;
+    }
     location.reload();
   } catch (e) {
     // operation-not-allowed means the provider exists in Firebase but has no
