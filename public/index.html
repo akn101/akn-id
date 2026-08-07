@@ -233,7 +233,55 @@ function showView(name) {
 }
 function setError(id, msg) { document.getElementById(id).textContent = msg; }
 
+// Which project this destination corresponds to. Hoisted out of the redirect
+// block because the approval check below needs it too.
+function projectFor(dest) {
+  try {
+    const subdomain = new URL(dest).hostname.split('.')[0];
+    if (subdomain === 'startpage') return 'startpage';
+    if (subdomain === 'thoughts') return 'thoughts';
+    if (subdomain === 'cloud' || subdomain === 'casanova') return 'nextcloud';
+    if (['halcyon', 'www', 'akn'].includes(subdomain)) return 'halcyon';
+  } catch {}
+  return 'halcyon';
+}
+
 async function handleSignedIn(user) {
+  // Ask the BACKEND whether this person is approved. It resolves the uid
+  // through identities/ -> people/ and, failing that, through the verified
+  // identifier index, so it recognises a human however they signed in.
+  //
+  // This used to read users/{uid} in the browser instead, which broke every
+  // sign-in method whose uid is not a plain Firebase provider uid: a Zitadel,
+  // Steam or email-OTP login lands as `zitadel_…` / `emailotp_…` with no
+  // users/ doc and no email on the token, so it fell into the "first sign-in"
+  // branch, WROTE a fresh pending record, and showed Pending Approval — while
+  // the backend was returning approved:true, role admin for the same token.
+  // It also meant the client decided its own role from an email comparison.
+  const idToken = await user.getIdToken();
+  const project = projectFor(redirectTo || 'https://akn.me.uk');
+
+  let verdict = null;
+  try {
+    const res = await fetch('https://api.akn.me.uk/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ idToken, project }),
+    });
+    if (res.ok) verdict = await res.json();
+  } catch { /* fall through to the legacy path below */ }
+
+  if (verdict) {
+    if (verdict.approved) { finishSignIn(); return; }
+    if (verdict.reason === 'rejected') { showView('rejected'); return; }
+    showView('pending');
+    return;
+  }
+
+  // Backend unreachable — fall back to the old client-side check rather than
+  // locking everyone out. This path is also what runs if /auth/verify is down,
+  // and id.akn.me.uk is Nextcloud's login screen, so it must degrade.
   const ref = doc(db, 'users', user.uid);
   const snap = await getDoc(ref);
 
@@ -273,26 +321,14 @@ async function handleSignedIn(user) {
     if (status === 'rejected') { showView('rejected'); return; }
   }
 
-  // Approved — POST token to api.akn.me.uk to set shared .akn.me.uk cookie, then redirect clean
+  finishSignIn();
+}
+
+// Approved. /auth/verify has already set the shared .akn.me.uk cookie, so this
+// only has to count down and send them on.
+function finishSignIn() {
   showView('redirect');
-  const idToken = await user.getIdToken();
   const dest = redirectTo || 'https://akn.me.uk';
-  let project = 'halcyon'; // default for akn.me.uk / www.akn.me.uk
-  try {
-    const subdomain = new URL(dest).hostname.split('.')[0];
-    if (subdomain === 'startpage') project = 'startpage';
-    else if (subdomain === 'thoughts') project = 'thoughts';
-    else if (subdomain === 'cloud' || subdomain === 'casanova') project = 'nextcloud';
-    else if (['halcyon','www','akn'].includes(subdomain)) project = 'halcyon';
-  } catch {}
-  try {
-    await fetch('https://api.akn.me.uk/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ idToken, project }),
-    });
-  } catch { /* non-fatal */ }
   let n = 5;
   const cd = document.getElementById('countdown');
   const iv = setInterval(() => {
