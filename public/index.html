@@ -269,12 +269,25 @@ async function handleSignedIn(user) {
       credentials: 'include',
       body: JSON.stringify({ idToken, project }),
     });
-    if (res.ok) verdict = await res.json();
+    // 403 carries a real verdict too (e.g. an unlinked phone), so parse it
+    // rather than treating it as "backend unreachable" and falling through to
+    // the legacy path, which would show the wrong screen.
+    if (res.ok || res.status === 403) verdict = await res.json();
   } catch { /* fall through to the legacy path below */ }
 
   if (verdict) {
     if (verdict.approved) { finishSignIn(); return; }
     if (verdict.reason === 'rejected') { showView('rejected'); return; }
+    if (verdict.reason === 'phone_not_linked') {
+      // Phone is resolve-only by design: it signs in a number already on
+      // someone's record and never creates an account. Say so, instead of
+      // leaving them on a pending screen that will never resolve.
+      await signOut(auth).catch(() => {});
+      showView('signin');
+      setError('signin-error', verdict.error ||
+        'That number is not linked to an account. Sign in another way, then add it from your account page.');
+      return;
+    }
     showView('pending');
     return;
   }
