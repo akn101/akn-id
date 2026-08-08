@@ -172,6 +172,7 @@ input::placeholder { color: var(--text-muted); }
       <div class="status-icon">⏳</div>
       <div class="card-title" style="text-align:center">Pending Approval</div>
       <p style="margin-top:8px">Your account is awaiting approval. You'll be notified once it's active.</p>
+      <div id="pending-detail" style="margin-top:16px;font-size:12px;color:var(--text-muted);line-height:1.7"></div>
       <button class="btn" id="btn-pending-logout" style="margin-top:20px">Sign Out</button>
     </div>
 
@@ -304,6 +305,21 @@ async function handleSignedIn(user) {
       setError('signin-error', verdict.error ||
         'That number is not linked to an account. Sign in another way, then add it from your account page.');
       return;
+    }
+    // Show what the sign-in actually produced. A bare "Pending Approval" hides
+    // the one thing that explains it — an empty email here means the provider
+    // returned no verified address, so it matched nobody and created a new
+    // person rather than recognising an existing one.
+    const rows = [
+      ['Signed in as', verdict.email || user.email || '—'],
+      ['Name', verdict.name || user.displayName || '—'],
+      ['Method', (user.providerData?.[0]?.providerId) || (user.uid || '').split('_')[0] || '—'],
+    ];
+    const detail = document.getElementById('pending-detail');
+    if (detail) {
+      detail.innerHTML = rows
+        .map(([k, v]) => `<div><span style="opacity:.6">${k}:</span> ${String(v).replace(/[<>&]/g, '')}</div>`)
+        .join('');
     }
     showView('pending');
     return;
