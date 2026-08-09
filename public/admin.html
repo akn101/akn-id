@@ -88,6 +88,12 @@ input::placeholder { color: var(--text-muted); }
 .identity-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--card-border); font-size: 12px; }
 .identity-row:last-child { border-bottom: none; }
 .identity-uid { font-family: monospace; font-size: 11px; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; }
+/* The provider is the one thing you actually scan this list for, so it leads
+   and is the only element at full contrast. */
+.identity-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.identity-provider { font-size: 13px; font-weight: 500; color: var(--text); }
+.identity-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+.identity-sub { font-family: monospace; opacity: 0.65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
 </style>
 </head>
 <body>
@@ -321,6 +327,16 @@ function escHtml(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Firestore timestamps arrive over JSON as {_seconds,_nanoseconds}, not as a
+// Date — `new Date(ts)` on one yields Invalid Date. Also tolerates an ISO
+// string or epoch ms so older rows still render.
+function fmtDate(ts) {
+  const ms = ts?._seconds != null ? ts._seconds * 1000
+    : (typeof ts === 'number' ? ts : Date.parse(ts));
+  if (!ms || Number.isNaN(ms)) return '';
+  return new Date(ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
     credentials: 'include',
@@ -448,13 +464,23 @@ function fillEditForm(p, identities) {
   if (!identities.length) {
     idEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:4px 0">No linked identities</div>';
   } else {
-    idEl.innerHTML = identities.map(id => `
+    idEl.innerHTML = identities.map(id => {
+      const meta = [
+        id.email ? escHtml(id.email) : null,
+        id.linkedAt ? `linked ${fmtDate(id.linkedAt)}` : null,
+      ].filter(Boolean).join(' · ');
+      return `
       <div class="identity-row">
-        <span class="identity-uid">${escHtml(id.uid)}</span>
-        <span style="font-size:11px;color:var(--text-muted)">${escHtml(id.provider || '')}</span>
-        <span style="font-size:11px;color:var(--text-muted)">${escHtml(id.email || '')}</span>
-        <button class="btn btn-danger" onclick="unlinkIdentity('${escHtml(id.uid)}')" style="padding:3px 8px;font-size:11px">Unlink</button>
-      </div>`).join('');
+        <span class="identity-main">
+          <span class="identity-provider">${escHtml(id.providerLabel || id.provider || 'Unknown')}</span>
+          <span class="identity-meta">
+            ${meta ? `<span>${meta}</span>` : ''}
+            <span class="identity-sub" title="${escHtml(id.uid)}">${escHtml(id.subject || id.uid)}</span>
+          </span>
+        </span>
+        <button class="btn btn-danger" onclick="unlinkIdentity('${escHtml(id.uid)}')" style="padding:3px 8px;font-size:11px;flex-shrink:0">Unlink</button>
+      </div>`;
+    }).join('');
   }
 
   document.getElementById('edit-msg').textContent = '';
