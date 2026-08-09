@@ -198,7 +198,7 @@ input::placeholder { color: var(--text-muted); }
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
-  getAuth, signInWithEmailAndPassword, GoogleAuthProvider, OAuthProvider,
+  getAuth, signInWithEmailAndPassword, GoogleAuthProvider,
   signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber,
   onAuthStateChanged, signOut, signInWithCustomToken,
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
@@ -408,15 +408,6 @@ document.getElementById('btn-google').addEventListener('click', async () => {
   catch (e) { setError('signin-error', friendlyError(e.code)); }
 });
 
-// Apple
-document.getElementById('btn-apple').addEventListener('click', async () => {
-  try {
-    const p = new OAuthProvider('apple.com');
-    p.addScope('email'); p.addScope('name');
-    await signInWithPopup(auth, p);
-  } catch (e) { setError('signin-error', friendlyError(e.code)); }
-});
-
 // Phone
 let confirmationResult = null, recaptchaVerifier = null;
 // Providers configured in Zitadel. Each button goes STRAIGHT to that provider —
@@ -426,7 +417,11 @@ let confirmationResult = null, recaptchaVerifier = null;
 //
 // Adding a provider: configure it in Zitadel, add one line to IDP_ALIASES in
 // lib/bridge/providers.js, add a button here.
-for (const [btn, idp] of [['btn-linkedin', 'linkedin'], ['btn-github', 'github']]) {
+// Apple goes through Zitadel too, not Firebase's OAuthProvider('apple.com'):
+// Firebase's Apple provider was enabled with no clientId, so that button threw
+// on every click. Zitadel holds the Services ID / key and is where every other
+// provider already lives.
+for (const [btn, idp] of [['btn-linkedin', 'linkedin'], ['btn-github', 'github'], ['btn-apple', 'apple']]) {
   document.getElementById(btn).addEventListener('click', () => {
     const dest = redirectTo || 'https://akn.me.uk';
     location.href = 'https://api.akn.me.uk/auth/bridge/zitadel/start?idp=' + idp +
