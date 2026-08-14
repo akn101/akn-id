@@ -44,6 +44,10 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
 .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
 .badge-rejected { background: rgba(252,165,165,0.1); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
+/* Denied and rejected are different things and must not look the same.
+   Denied shows that person a screen with a reason and leaves their account
+   alive; rejected disables the Firebase user outright. */
+.badge-denied { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.2); }
 .badge-admin { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
 .btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 7px; padding: 5px 12px; font-size: 12px; font-family: inherit; cursor: pointer; transition: background 0.2s; }
 .btn:hover { background: rgba(167,139,250,0.25); }
@@ -52,6 +56,8 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .btn-approve:hover { background: rgba(110,231,183,0.18); }
 .btn-reject { background: rgba(252,165,165,0.08); color: #fca5a5; border-color: rgba(252,165,165,0.2); }
 .btn-reject:hover { background: rgba(252,165,165,0.15); }
+.btn-deny { background: rgba(251,146,60,0.1); color: #fb923c; border-color: rgba(251,146,60,0.25); }
+.btn-deny:hover { background: rgba(251,146,60,0.18); }
 .btn-danger { background: rgba(252,165,165,0.08); color: #fca5a5; border-color: rgba(252,165,165,0.2); font-size: 12px; }
 .btn-danger:hover { background: rgba(252,165,165,0.15); }
 .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; }
@@ -148,11 +154,20 @@ input::placeholder { color: var(--text-muted); }
       </div>
       <div class="form-row">
         <div class="field"><label>Status</label>
-          <select id="c-status"><option value="pending">Pending</option><option value="approved">Approved</option></select>
+          <select id="c-status">
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <!-- Denied is creatable so somebody can be turned away before they
+                 ever sign in, rather than only after they show up. -->
+            <option value="denied">Denied</option>
+          </select>
         </div>
         <div class="field"><label>Role</label>
           <select id="c-role"><option value="user">User</option><option value="admin">Admin</option></select>
         </div>
+      </div>
+      <div class="field"><label>Reason (shown to them if denied)</label>
+        <input type="text" id="c-status-reason" maxlength="300" placeholder="Only used when the status is Denied" />
       </div>
       <div class="field">
         <label>Projects</label>
@@ -194,7 +209,8 @@ input::placeholder { color: var(--text-muted); }
         <select id="edit-status">
           <option value="pending">Pending</option>
           <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
+          <option value="denied">Denied — shown a reason</option>
+          <option value="rejected">Rejected — account disabled</option>
         </select>
       </div>
       <div class="field"><label>Role</label>
@@ -202,6 +218,21 @@ input::placeholder { color: var(--text-muted); }
           <option value="user">User</option>
           <option value="admin">Admin</option>
         </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <!-- Shown verbatim to the person on the denial screen, so it is written
+           for them to read, not as an internal note. -->
+      <div class="field" style="flex:2">
+        <label>Reason <span id="reason-hint" style="text-transform:none;letter-spacing:0">— shown to them on the denied screen</span></label>
+        <input type="text" id="edit-status-reason" placeholder="e.g. Access to akn services is invite-only right now." maxlength="300" />
+      </div>
+      <!-- Relationship strength. Not an authorization input: nothing reads it
+           to decide access, so no denial ever comes down to an unexplainable
+           number. Blank clears it. -->
+      <div class="field">
+        <label>Score</label>
+        <input type="number" id="edit-score" step="1" placeholder="—" />
       </div>
     </div>
     <div class="field">
@@ -268,6 +299,7 @@ input::placeholder { color: var(--text-muted); }
 
     <div class="modal-footer">
       <button class="btn btn-danger" id="btn-modal-reject">Set Rejected</button>
+      <button class="btn btn-deny" id="btn-modal-deny">Set Denied</button>
       <button class="btn btn-approve" id="btn-modal-approve">Set Approved</button>
       <button class="btn" id="btn-modal-save">Save Changes</button>
     </div>
@@ -406,6 +438,7 @@ function renderPeopleList(people, containerId) {
         <span class="badge badge-${escHtml(p.status)}">${escHtml(p.status)}</span>
         <div class="actions" onclick="event.stopPropagation()">
           ${p.status !== 'approved' ? `<button class="btn btn-approve" onclick="quickStatus('${escHtml(p.personId)}','approved')">Approve</button>` : ''}
+          ${p.status !== 'denied' ? `<button class="btn btn-deny" onclick="openDeny('${escHtml(p.personId)}')">Deny</button>` : ''}
           ${p.status !== 'rejected' ? `<button class="btn btn-reject" onclick="quickStatus('${escHtml(p.personId)}','rejected')">Reject</button>` : ''}
         </div>
       </div>`;
@@ -417,6 +450,17 @@ window.quickStatus = async (personId, status) => {
     await api(`/auth/people/${personId}`, { method: 'PATCH', body: { status } });
     await loadPeople();
   } catch (e) { alert(e.message); }
+};
+
+// Deliberately NOT a quickStatus('denied'). A denial is the one status the
+// person actually sees, and it is shown alongside whatever reason is stored —
+// so it opens the editor with the reason field waiting rather than writing a
+// blank denial from the list.
+window.openDeny = async (personId) => {
+  await openEdit(personId);
+  document.getElementById('edit-status').value = 'denied';
+  syncReasonHint();
+  document.getElementById('edit-status-reason').focus();
 };
 
 // Edit modal
@@ -447,6 +491,10 @@ function fillEditForm(p, identities) {
   document.getElementById('edit-email').value = p.email || '';
   document.getElementById('edit-status').value = p.status || 'pending';
   document.getElementById('edit-role').value = p.role || 'user';
+  document.getElementById('edit-status-reason').value = p.statusReason || '';
+  document.getElementById('edit-score').value =
+    (typeof p.score === 'number') ? p.score : '';
+  syncReasonHint();
 
   tagState['edit-projects'] = [...(p.projects || [])];
   tagState['edit-groups'] = [...(p.groups || [])];
@@ -509,7 +557,17 @@ document.getElementById('btn-modal-save').addEventListener('click', async () => 
     tags: tagState['edit-tags'],
     secondaryEmails: document.getElementById('edit-secondary-emails').value.split('\n').map(e => e.trim()).filter(Boolean),
     phoneNumbers: document.getElementById('edit-phone-numbers').value.split('\n').map(p => p.trim()).filter(Boolean),
+    // null, not undefined — clearing the box has to clear the stored value,
+    // and an undefined is dropped by JSON.stringify before it ever leaves here.
+    statusReason: document.getElementById('edit-status-reason').value.trim() || null,
+    score: scoreFieldValue(),
   };
+  if (body.score === INVALID_SCORE) {
+    const m = document.getElementById('edit-msg');
+    m.className = 'msg msg-err';
+    m.textContent = 'Score must be a number, or blank to clear it';
+    return;
+  }
   const msg = document.getElementById('edit-msg');
   try {
     const result = await api(`/auth/people/${pid}`, { method: 'PATCH', body });
@@ -526,12 +584,60 @@ document.getElementById('btn-modal-save').addEventListener('click', async () => 
   } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
 });
 
+// The API takes score as a number or null; anything else it rejects with a 400.
+// Doing that check here means a typo does not cost a round trip and does not
+// silently blank a score that was already set.
+const INVALID_SCORE = Symbol('invalid-score');
+function scoreFieldValue() {
+  const raw = document.getElementById('edit-score').value.trim();
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : INVALID_SCORE;
+}
+
+// The reason text means something different depending on the status, and
+// getting that wrong means writing an internal note onto somebody's screen.
+function syncReasonHint() {
+  const status = document.getElementById('edit-status').value;
+  const hint = document.getElementById('reason-hint');
+  const input = document.getElementById('edit-status-reason');
+  if (status === 'denied') {
+    hint.textContent = '— shown to them on the denied screen';
+    input.placeholder = 'e.g. Access to akn services is invite-only right now.';
+  } else if (status === 'rejected') {
+    hint.textContent = '— account disabled; they see a generic block, not this text';
+    input.placeholder = 'Internal note';
+  } else {
+    hint.textContent = '— only shown if you deny them';
+    input.placeholder = 'e.g. Access to akn services is invite-only right now.';
+  }
+}
+document.getElementById('edit-status').addEventListener('change', syncReasonHint);
+
 document.getElementById('btn-modal-approve').addEventListener('click', async () => {
   document.getElementById('edit-status').value = 'approved';
+  syncReasonHint();
+  document.getElementById('btn-modal-save').click();
+});
+// Denied, not rejected: their account keeps working and they get a screen with
+// this reason on it. Refusing to save without one is the point — an unexplained
+// denial is the thing the denial screen exists to avoid.
+document.getElementById('btn-modal-deny').addEventListener('click', async () => {
+  const reason = document.getElementById('edit-status-reason');
+  document.getElementById('edit-status').value = 'denied';
+  syncReasonHint();
+  if (!reason.value.trim()) {
+    const m = document.getElementById('edit-msg');
+    m.className = 'msg msg-err';
+    m.textContent = 'Give a reason — they will be shown it';
+    reason.focus();
+    return;
+  }
   document.getElementById('btn-modal-save').click();
 });
 document.getElementById('btn-modal-reject').addEventListener('click', async () => {
   document.getElementById('edit-status').value = 'rejected';
+  syncReasonHint();
   document.getElementById('btn-modal-save').click();
 });
 
@@ -577,6 +683,7 @@ document.getElementById('btn-create-person').addEventListener('click', async () 
         name,
         email: document.getElementById('c-email').value.trim() || undefined,
         status: document.getElementById('c-status').value,
+        statusReason: document.getElementById('c-status-reason').value.trim() || null,
         role: document.getElementById('c-role').value,
         projects: tagState['c-projects'],
         groups: tagState['c-groups'],
@@ -585,6 +692,7 @@ document.getElementById('btn-create-person').addEventListener('click', async () 
     msg.className = 'msg msg-ok'; msg.textContent = `Person created (${personId})`;
     document.getElementById('c-name').value = '';
     document.getElementById('c-email').value = '';
+    document.getElementById('c-status-reason').value = '';
     tagState['c-projects'] = []; renderTagWrap('c-projects');
     tagState['c-groups'] = []; renderTagWrap('c-groups');
     await loadPeople();
@@ -601,7 +709,17 @@ document.getElementById('btn-sync-firebase').addEventListener('click', async () 
   try {
     const out = await api('/auth/sync/firebase', { method: 'POST' });
     msg.className = 'msg msg-ok';
-    msg.textContent = `Done. Scanned ${out.scanned}, linked ${out.linked}, created ${out.createdPeople}, refreshed ${out.updatedIdentities} identities.`;
+    // `queued` is the number the sync deliberately refused to decide — say it
+    // out loud, or a silent duplicate is exactly what the queue was meant to
+    // stop being silent about.
+    const queued = out.queued || 0;
+    const conflicts = (out.conflicts || []).length;
+    msg.textContent = `Done. Scanned ${out.scanned}, linked ${out.linked}`
+      + `${out.matchedByIdentifier ? ` (${out.matchedByIdentifier} matched to existing people)` : ''}`
+      + `, created ${out.createdPeople}, refreshed ${out.updatedIdentities} identities`
+      + `${queued ? `, ${queued} needing review` : ''}`
+      + `${conflicts ? `, ${conflicts} identifier conflicts` : ''}.`;
+    if (queued || conflicts) msg.className = 'msg';
     await loadPeople();
   } catch (e) {
     msg.className = 'msg msg-err';
@@ -620,7 +738,13 @@ document.getElementById('btn-sync-carddav').addEventListener('click', async () =
     const out = await api('/auth/sync/carddav', { method: 'POST' });
     const errs = (out.syncErrors || []).length;
     msg.className = errs ? 'msg msg-err' : 'msg msg-ok';
-    msg.textContent = `CardDAV done. Contacts ${out.scanned}, people updated ${out.updatedPeople}, created ${out.createdPeople}, Firebase synced ${out.syncedFirebase}${errs ? `, errors ${errs}` : ''}.`;
+    const queued = out.queued || 0;
+    msg.textContent = `CardDAV done. Contacts ${out.scanned}, people updated ${out.updatedPeople},`
+      + ` created ${out.createdPeople}, Firebase synced ${out.syncedFirebase}`
+      // Name-only matches. Neither linked nor created — they are in the
+      // identity queue waiting for you to say which person they are.
+      + `${queued ? `, ${queued} name matches left for review` : ''}`
+      + `${errs ? `, errors ${errs}` : ''}.`;
     await loadPeople();
   } catch (e) {
     msg.className = 'msg msg-err';
