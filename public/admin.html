@@ -5,20 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin — akn.id</title>
 <link rel="icon" href="https://akn.me.uk/favicon.ico">
+<link rel="stylesheet" href="/akn.css">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
-  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
-  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
-  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
-  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3);
-}
-html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+/* Page-specific. The shared tokens and shell come from akn.css; the admin
+   panel keeps its own denser .btn, .card and .page because it is a table
+   view, not a form page, and those differences are deliberate. */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid var(--card-border); }
-.wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
-.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
 .topbar-right { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--text-muted); }
 .topbar-right a { color: var(--btn-color); text-decoration: none; }
 .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -29,7 +21,6 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .tab.active { color: var(--btn-color); border-bottom-color: var(--btn-color); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
-.section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
 .person-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; cursor: pointer; transition: background 0.15s; }
 .person-row:last-child { border-bottom: none; }
 .person-row:hover { background: rgba(255,255,255,0.02); }
@@ -40,9 +31,6 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .person-email { font-size: 12px; color: var(--text-muted); }
 .person-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
-.badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
-.badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
 .badge-rejected { background: rgba(252,165,165,0.1); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
 .badge-admin { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
 .btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 7px; padding: 5px 12px; font-size: 12px; font-family: inherit; cursor: pointer; transition: background 0.2s; }
@@ -56,11 +44,8 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .btn-danger:hover { background: rgba(252,165,165,0.15); }
 .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; }
 .empty { padding: 32px; text-align: center; font-size: 13px; color: var(--text-muted); }
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; }
 input, select { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s; }
 input:focus, select:focus { border-color: var(--input-focus); }
-input::placeholder { color: var(--text-muted); }
 .create-form { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
@@ -93,18 +78,48 @@ input::placeholder { color: var(--text-muted); }
 .identity-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .identity-provider { font-size: 13px; font-weight: 500; color: var(--text); }
 .identity-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+/* Affiliations and derived grants are READ-ONLY, and they have to look it.
+   The whole point of the split is that one box is a decision you are making and
+   the other is a fact you are being shown; if they render the same, the
+   distinction survives only in the reader's memory. So: no purple (which means
+   "editable" everywhere else here), no × button, muted border. */
+.tag-static { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.04); color: var(--text-muted); border: 1px solid var(--card-border); border-radius: 20px; padding: 2px 9px; font-size: 12px; }
+.tag-static .cnt { font-size: 10px; opacity: 0.6; font-variant-numeric: tabular-nums; }
+.tag-derived { background: rgba(110,231,183,0.08); color: #6ee7b7; border-color: rgba(110,231,183,0.2); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.readonly-box { background: rgba(255,255,255,0.02); border: 1px dashed var(--card-border); border-radius: 9px; padding: 10px; }
+.hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+.hint code { font-family: ui-monospace, monospace; color: var(--btn-color); }
+.rule-row { padding: 12px 16px; border-bottom: 1px solid var(--card-border); }
+.rule-row:last-child { border-bottom: none; }
+.rule-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rule-name { font-size: 13px; font-weight: 500; flex: 1; min-width: 0; }
+.rule-body { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
+.badge-off { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--card-border); }
+.badge-warn { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+.picker { max-height: 190px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 9px; padding: 6px; }
+.picker label { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: 12px; color: var(--text); cursor: pointer; letter-spacing: 0; text-transform: none; margin: 0; }
+.picker label:hover { background: rgba(255,255,255,0.04); }
+.picker input[type=checkbox] { width: auto; margin: 0; flex-shrink: 0; }
+.picker .cnt { margin-left: auto; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .identity-sub { font-family: monospace; opacity: 0.65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
 </style>
 </head>
 <body>
 <div class="topbar">
-  <a class="wordmark" href="https://akn.me.uk">
-    <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
-    <span>akn.id / admin</span>
-  </a>
+  <div class="topbar-left">
+    <a class="wordmark" href="https://akn.me.uk">
+      <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
+      <span>akn.id</span>
+    </a>
+    <nav class="nav">
+      <a href="/account">Account</a>
+      <a href="/card">Card</a>
+      <a href="/admin" aria-current="page">Admin</a>
+    </nav>
+  </div>
   <div class="topbar-right">
     <span id="admin-name"></span>
-    <a href="/account">My Account</a>
     <button id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;color:var(--text-muted)">Sign Out</button>
   </div>
 </div>
@@ -129,6 +144,7 @@ input::placeholder { color: var(--text-muted); }
     <button class="tab active" data-tab="people">All People</button>
     <button class="tab" data-tab="pending">Pending</button>
     <button class="tab" data-tab="create">Create Person</button>
+    <button class="tab" data-tab="rules">Rules</button>
   </div>
 
   <div class="tab-panel active" id="tab-people">
@@ -161,14 +177,67 @@ input::placeholder { color: var(--text-muted); }
         </div>
       </div>
       <div class="field">
-        <label>Groups</label>
-        <div class="tag-input-wrap" id="c-groups-wrap">
-          <input class="tag-input" id="c-groups-input" placeholder="friends, family…" />
+        <label>Entitlements</label>
+        <div class="tag-input-wrap" id="c-entitlements-wrap">
+          <input class="tag-input" id="c-entitlements-input" placeholder="cloud:share…" />
         </div>
+        <div class="hint"><code>app:permission</code>. Affiliations come from bonds, not from here.</div>
       </div>
       <button class="btn" id="btn-create-person" style="margin-top:8px">Create Person</button>
       <div class="msg" id="create-msg"></div>
     </div>
+  </div>
+
+  <div class="tab-panel" id="tab-rules">
+    <!-- A rule turns an affiliation into access. It is the only thing that can,
+         and that is deliberate: bonds group membership is a filing decision made
+         in a CRM, so it must not be able to open a door by itself. -->
+    <div class="card" style="padding:20px;margin-bottom:20px">
+      <div class="section-title">New rule</div>
+      <div class="form-row">
+        <div class="field"><label>Name</label><input type="text" id="r-name" placeholder="Eton leavers → Nextcloud" /></div>
+        <div class="field"><label>Match</label>
+          <select id="r-mode">
+            <option value="any">any of the selected</option>
+            <option value="all">all of the selected</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>bonds groups</label>
+          <input type="search" id="r-group-filter" placeholder="filter…" style="margin-bottom:6px" />
+          <div class="picker" id="r-groups"><div class="empty" style="padding:14px">Loading…</div></div>
+        </div>
+        <div class="field">
+          <label>bonds labels</label>
+          <div class="picker" id="r-labels" style="margin-top:29px"><div class="empty" style="padding:14px">Loading…</div></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Grants projects</label>
+          <div class="tag-input-wrap" id="r-projects-wrap">
+            <input class="tag-input" id="r-projects-input" placeholder="nextcloud…" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Grants entitlements</label>
+          <div class="tag-input-wrap" id="r-entitlements-wrap">
+            <input class="tag-input" id="r-entitlements-input" placeholder="cloud:share…" />
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn" id="btn-rule-preview">Preview</button>
+        <button class="btn btn-approve" id="btn-rule-save" disabled>Save rule</button>
+      </div>
+      <div class="msg" id="rule-msg"></div>
+      <div id="rule-preview" style="display:none;margin-top:14px"></div>
+    </div>
+
+    <div class="section-title">Active rules</div>
+    <div class="card" id="rules-list"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
@@ -204,23 +273,49 @@ input::placeholder { color: var(--text-muted); }
         </select>
       </div>
     </div>
+    <div class="section-title" style="margin-top:20px">Access — what they may do</div>
     <div class="field">
-      <label>Projects</label>
+      <label>Projects — which apps they may reach</label>
       <div class="tag-input-wrap" id="edit-projects-wrap">
-        <input class="tag-input" id="edit-projects-input" placeholder="project-id…" />
+        <input class="tag-input" id="edit-projects-input" placeholder="nextcloud, aria…" />
       </div>
     </div>
     <div class="field">
-      <label>Groups</label>
-      <div class="tag-input-wrap" id="edit-groups-wrap">
-        <input class="tag-input" id="edit-groups-input" placeholder="friends, family…" />
+      <label>Entitlements — what they may do inside an app</label>
+      <div class="tag-input-wrap" id="edit-entitlements-wrap">
+        <input class="tag-input" id="edit-entitlements-input" placeholder="cloud:share…" />
       </div>
+      <div class="hint">
+        <code>app:permission</code>. Enforced by the app, not by akn ID.
+        A bonds group or a social label is an <em>affiliation</em> and belongs below —
+        it is not a permission and will be refused here.
+      </div>
+    </div>
+    <div class="field" id="edit-derived-field" style="display:none">
+      <label>Granted by a rule — not editable here</label>
+      <div class="readonly-box"><div class="chip-row" id="edit-derived"></div></div>
+      <div class="hint" id="edit-derived-why"></div>
     </div>
     <div class="field">
       <label>Tags</label>
       <div class="tag-input-wrap" id="edit-tags-wrap">
         <input class="tag-input" id="edit-tags-input" placeholder="tag…" />
       </div>
+    </div>
+
+    <div class="section-title" style="margin-top:22px">Affiliations — who they are, from bonds</div>
+    <div class="readonly-box">
+      <div id="edit-bonds-status" style="font-size:12px;color:var(--text-muted)">Loading…</div>
+      <div class="chip-row" id="edit-affiliations" style="margin-top:9px"></div>
+      <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
+        <button class="btn" id="btn-bonds-suggest">Find in bonds</button>
+        <button class="btn" id="btn-bonds-sync" style="display:none">Re-sync</button>
+        <button class="btn btn-danger" id="btn-bonds-unlink" style="display:none">Unlink</button>
+      </div>
+      <div class="msg" id="bonds-msg"></div>
+    </div>
+    <div class="hint">
+      Read-only: bonds owns this. It grants nothing on its own — a rule has to say so.
     </div>
 
     <!-- Linked identities -->
@@ -237,8 +332,11 @@ input::placeholder { color: var(--text-muted); }
     </div>
     
     <!-- Link via Email OTP -->
-    <div style="margin-top:12px;padding:12px;background:#f8f9fa;border-radius:6px">
-      <div style="font-weight:500;margin-bottom:8px">🔗 Link via Email OTP</div>
+    <!-- Was #f8f9fa: a light panel inherited from a light-theme draft, sitting
+         in a dark modal with light text on it. The heading and placeholder were
+         invisible. -->
+    <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--card-border);border-radius:9px">
+      <div style="font-weight:500;margin-bottom:8px;font-size:13px">🔗 Link via Email OTP</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <input type="email" id="link-email-otp" placeholder="email@example.com" style="flex:1;min-width:160px" />
         <button class="btn" id="btn-send-otp" onclick="sendLinkOTP()">Send OTP</button>
@@ -257,12 +355,12 @@ input::placeholder { color: var(--text-muted); }
     <div style="margin-top:24px">
       <div class="section-title">Secondary Emails & Phone Numbers</div>
       <div style="margin-bottom:12px">
-        <label style="display:block;margin-bottom:4px;font-size:13px;color:#666">Secondary Emails (one per line)</label>
-        <textarea id="edit-secondary-emails" rows="3" placeholder="email1@example.com&#10;email2@example.com" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:13px"></textarea>
+        <label style="display:block;margin-bottom:4px;font-size:11px;color:var(--text-muted);letter-spacing:0.04em">Secondary Emails (one per line)</label>
+        <textarea id="edit-secondary-emails" rows="3" placeholder="email1@example.com&#10;email2@example.com" style="width:100%;padding:9px 12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:9px;color:var(--text);font-family:ui-monospace,monospace;font-size:13px;outline:none"></textarea>
       </div>
       <div>
-        <label style="display:block;margin-bottom:4px;font-size:13px;color:#666">Phone Numbers (one per line, E.164 format)</label>
-        <textarea id="edit-phone-numbers" rows="2" placeholder="+447123456789&#10;+14155551234" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:13px"></textarea>
+        <label style="display:block;margin-bottom:4px;font-size:11px;color:var(--text-muted);letter-spacing:0.04em">Phone Numbers (one per line, E.164 format)</label>
+        <textarea id="edit-phone-numbers" rows="2" placeholder="+447123456789&#10;+14155551234" style="width:100%;padding:9px 12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:9px;color:var(--text);font-family:ui-monospace,monospace;font-size:13px;outline:none"></textarea>
       </div>
     </div>
 
@@ -281,8 +379,9 @@ let allPeople = [];
 
 // Tags state
 const tagState = {
-  'c-projects': [], 'c-groups': [],
-  'edit-projects': [], 'edit-groups': [], 'edit-tags': [],
+  'c-projects': [], 'c-entitlements': [],
+  'edit-projects': [], 'edit-entitlements': [], 'edit-tags': [],
+  'r-projects': [], 'r-entitlements': [],
 };
 
 function renderTagWrap(key) {
@@ -321,7 +420,8 @@ function initTagInput(key) {
   wrap.addEventListener('click', () => input.focus());
 }
 
-['c-projects','c-groups','edit-projects','edit-groups','edit-tags'].forEach(initTagInput);
+['c-projects','c-entitlements','edit-projects','edit-entitlements','edit-tags',
+ 'r-projects','r-entitlements'].forEach(initTagInput);
 
 function escHtml(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -393,7 +493,7 @@ function renderPeopleList(people, containerId) {
       ? `<img src="${escHtml(p.avatar)}" onerror="this.style.display='none'">`
       : initials;
     const projs = (p.projects || []).join(', ') || 'no projects';
-    const groups = (p.groups || []).join(', ');
+    const groups = (p.entitlements || []).join(', ');
     return `
       <div class="person-row" onclick="openEdit('${escHtml(p.personId)}')">
         <div class="person-avatar">${avatar}</div>
@@ -435,6 +535,7 @@ window.openEdit = async (personId) => {
   try {
     const data = await api(`/auth/people/${personId}`);
     fillEditForm(data, data.identities || []);
+    refreshAccessPanel(personId);
   } catch (e) {
     document.getElementById('edit-msg').className = 'msg msg-err';
     document.getElementById('edit-msg').textContent = e.message;
@@ -448,12 +549,17 @@ function fillEditForm(p, identities) {
   document.getElementById('edit-status').value = p.status || 'pending';
   document.getElementById('edit-role').value = p.role || 'user';
 
+  // `groups` is the pre-split field. Only its colon-shaped half was ever an
+  // entitlement, so only that half is offered for editing — the rest were
+  // affiliations typed into the wrong box and are now read from bonds.
   tagState['edit-projects'] = [...(p.projects || [])];
-  tagState['edit-groups'] = [...(p.groups || [])];
+  tagState['edit-entitlements'] = [...(p.entitlements || (p.groups || []).filter(g => g.includes(':')))];
   tagState['edit-tags'] = [...(p.tags || [])];
   renderTagWrap('edit-projects');
-  renderTagWrap('edit-groups');
+  renderTagWrap('edit-entitlements');
   renderTagWrap('edit-tags');
+
+  renderAffiliations(p);
 
   // Secondary emails and phone numbers
   document.getElementById('edit-secondary-emails').value = (p.secondaryEmails || []).join('\n');
@@ -489,6 +595,122 @@ function fillEditForm(p, identities) {
   document.getElementById('link-provider').value = '';
 }
 
+// ── affiliations, and the grants derived from them ──────────────────────────
+//
+// Two read-only blocks in a form full of editable ones. They are rendered with
+// .tag-static rather than .tag on purpose: everything purple in this UI is
+// something you are deciding, and these are things you are being told.
+
+function renderAffiliations(p) {
+  const status = document.getElementById('edit-bonds-status');
+  const chips = document.getElementById('edit-affiliations');
+  const linked = Boolean(p.bondsContactId);
+
+  document.getElementById('btn-bonds-sync').style.display = linked ? '' : 'none';
+  document.getElementById('btn-bonds-unlink').style.display = linked ? '' : 'none';
+  document.getElementById('btn-bonds-suggest').style.display = linked ? 'none' : '';
+  document.getElementById('bonds-msg').textContent = '';
+
+  if (!linked) {
+    status.textContent = 'Not linked to a bonds contact — no affiliations, so no rule can match.';
+    chips.innerHTML = '';
+    return;
+  }
+  const a = p.affiliations || {};
+  // 'migration' means nobody looked at this link individually — it was matched
+  // in bulk on an email. That is a weaker claim than an admin confirming it and
+  // the UI should not round it up to the same thing.
+  const via = p.bondsLinkedBy === 'admin' ? 'confirmed by an admin'
+    : p.bondsLinkedBy === 'migration' ? `matched automatically on ${escHtml(p.bondsLinkedVia || 'an identifier')}`
+    : 'linked';
+  status.innerHTML = `Linked to bonds contact <code style="color:var(--btn-color)">${escHtml(p.bondsContactId)}</code> — ${via}`
+    + (a.syncedAt ? ` · synced ${fmtDate(a.syncedAt)}` : '');
+
+  const parts = [
+    ...(a.groups || []).map(g => `<span class="tag-static">${escHtml(g.name || g.id)}</span>`),
+    ...(a.labels || []).map(l => `<span class="tag-static">${escHtml(l.slug || l.name)}</span>`),
+  ];
+  chips.innerHTML = parts.length ? parts.join('')
+    : '<span style="font-size:12px;color:var(--text-muted)">No groups or labels in bonds</span>';
+}
+
+function renderDerived(access) {
+  const field = document.getElementById('edit-derived-field');
+  const box = document.getElementById('edit-derived');
+  const why = document.getElementById('edit-derived-why');
+  const d = access?.derived || { projects: [], entitlements: [] };
+  if (!d.projects.length && !d.entitlements.length) { field.style.display = 'none'; return; }
+  field.style.display = '';
+  box.innerHTML = [
+    ...d.projects.map(p => `<span class="tag-static tag-derived">${escHtml(p)}</span>`),
+    ...d.entitlements.map(e => `<span class="tag-static tag-derived">${escHtml(e)}</span>`),
+  ].join('');
+  const names = (access.why || []).filter(w => !w.redundant).map(w => w.ruleName).filter(Boolean);
+  // Named, not just counted. "Why does this person have Nextcloud" has to be
+  // answerable here or the indirection has cost more than it bought.
+  why.textContent = names.length ? `From ${names.join(', ')}. Remove the rule to withdraw it.` : '';
+}
+
+async function refreshAccessPanel(personId) {
+  try {
+    const data = await api(`/auth/people/${personId}/access`);
+    renderDerived(data.access);
+  } catch { document.getElementById('edit-derived-field').style.display = 'none'; }
+}
+
+document.getElementById('btn-bonds-suggest').addEventListener('click', async () => {
+  const msg = document.getElementById('bonds-msg');
+  const btn = document.getElementById('btn-bonds-suggest');
+  btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Searching bonds…';
+  try {
+    const s = await api(`/auth/people/${editPersonId}/bonds/suggest`);
+    if (!s.match) { msg.className = 'msg msg-err'; msg.textContent = 'No bonds contact matches this person.'; }
+    else if (s.ambiguous) {
+      // Deliberately not offered as a one-click link. Two contacts share the
+      // address, and picking one would attach a stranger's affiliations to this
+      // account — which rules then read as grounds for access.
+      msg.className = 'msg msg-err';
+      msg.textContent = `${s.match.all.length} bonds contacts share that address. Resolve it in bonds first — linking the wrong one would import someone else's affiliations.`;
+    } else if (confirm(`Link to "${s.match.name}" in bonds?\n\nMatched on ${s.match.matchedOn}. This imports their groups and labels; it grants nothing by itself.`)) {
+      await api(`/auth/people/${editPersonId}/bonds/link`, {
+        method: 'POST',
+        body: { contactId: s.match.contactId, vaultId: s.match.vaultId, matchedOn: s.match.matchedOn },
+      });
+      msg.className = 'msg msg-ok'; msg.textContent = 'Linked and synced';
+      const data = await api(`/auth/people/${editPersonId}`);
+      fillEditForm(data, data.identities || []);
+      refreshAccessPanel(editPersonId);
+    } else { msg.textContent = ''; }
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+  btn.disabled = false;
+});
+
+document.getElementById('btn-bonds-sync').addEventListener('click', async () => {
+  const msg = document.getElementById('bonds-msg');
+  msg.className = 'msg'; msg.textContent = 'Syncing…';
+  try {
+    await api(`/auth/people/${editPersonId}/affiliations/sync`, { method: 'POST' });
+    const data = await api(`/auth/people/${editPersonId}`);
+    fillEditForm(data, data.identities || []);
+    refreshAccessPanel(editPersonId);
+    document.getElementById('bonds-msg').className = 'msg msg-ok';
+    document.getElementById('bonds-msg').textContent = 'Synced from bonds';
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+});
+
+document.getElementById('btn-bonds-unlink').addEventListener('click', async () => {
+  if (!confirm('Unlink from bonds?\n\nThe affiliations go too, so any access derived from them is withdrawn.')) return;
+  const msg = document.getElementById('bonds-msg');
+  try {
+    await api(`/auth/people/${editPersonId}/bonds/link`, { method: 'DELETE' });
+    const data = await api(`/auth/people/${editPersonId}`);
+    fillEditForm(data, data.identities || []);
+    refreshAccessPanel(editPersonId);
+    document.getElementById('bonds-msg').className = 'msg msg-ok';
+    document.getElementById('bonds-msg').textContent = 'Unlinked';
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+});
+
 document.getElementById('modal-close').addEventListener('click', () => {
   document.getElementById('edit-overlay').classList.remove('open');
 });
@@ -505,7 +727,7 @@ document.getElementById('btn-modal-save').addEventListener('click', async () => 
     status: document.getElementById('edit-status').value,
     role: document.getElementById('edit-role').value,
     projects: tagState['edit-projects'],
-    groups: tagState['edit-groups'],
+    entitlements: tagState['edit-entitlements'],
     tags: tagState['edit-tags'],
     secondaryEmails: document.getElementById('edit-secondary-emails').value.split('\n').map(e => e.trim()).filter(Boolean),
     phoneNumbers: document.getElementById('edit-phone-numbers').value.split('\n').map(p => p.trim()).filter(Boolean),
@@ -579,14 +801,14 @@ document.getElementById('btn-create-person').addEventListener('click', async () 
         status: document.getElementById('c-status').value,
         role: document.getElementById('c-role').value,
         projects: tagState['c-projects'],
-        groups: tagState['c-groups'],
+        entitlements: tagState['c-entitlements'],
       }
     });
     msg.className = 'msg msg-ok'; msg.textContent = `Person created (${personId})`;
     document.getElementById('c-name').value = '';
     document.getElementById('c-email').value = '';
     tagState['c-projects'] = []; renderTagWrap('c-projects');
-    tagState['c-groups'] = []; renderTagWrap('c-groups');
+    tagState['c-entitlements'] = []; renderTagWrap('c-entitlements');
     await loadPeople();
   } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
   btn.disabled = false;
@@ -636,8 +858,169 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+    // Lazily, because the vocabulary call pulls every group and label out of
+    // bonds and there is no reason to pay for it on a page load that never
+    // opens this tab.
+    if (tab.dataset.tab === 'rules') loadRulesTab();
   });
 });
+
+// ── rules ───────────────────────────────────────────────────────────────────
+
+let vocabulary = null;
+let previewedRule = null;   // only a previewed rule may be saved
+
+async function loadRulesTab() {
+  if (!vocabulary) {
+    try {
+      vocabulary = await api('/auth/bonds/vocabulary');
+      renderPickers();
+    } catch (e) {
+      document.getElementById('r-groups').innerHTML = `<div class="empty" style="padding:14px">bonds unreachable: ${escHtml(e.message)}</div>`;
+      document.getElementById('r-labels').innerHTML = '';
+    }
+  }
+  loadRules();
+}
+
+function renderPickers(filter = '') {
+  const f = filter.trim().toLowerCase();
+  const groups = (vocabulary.groups || []).filter(g => !f || g.name.toLowerCase().includes(f));
+  // The member count sits next to every group because it is the number that
+  // decides whether a rule is sensible. "Eton College" holds thousands; writing
+  // a rule against it without that in view is how a mass grant happens.
+  document.getElementById('r-groups').innerHTML = groups.length ? groups.map(g => `
+    <label><input type="checkbox" data-kind="group" value="${escHtml(g.id)}" data-name="${escHtml(g.name)}">
+      <span>${escHtml(g.name)}</span><span class="cnt">${g.memberCount}</span></label>`).join('')
+    : '<div class="empty" style="padding:14px">No match</div>';
+  document.getElementById('r-labels').innerHTML = (vocabulary.labels || []).map(l => `
+    <label><input type="checkbox" data-kind="label" value="${escHtml(l.slug)}" data-name="${escHtml(l.name)}">
+      <span>${escHtml(l.name)}</span></label>`).join('');
+}
+
+document.getElementById('r-group-filter').addEventListener('input', e => {
+  if (vocabulary) renderPickers(e.target.value);
+});
+
+// Any edit invalidates the preview. Saving a rule whose blast radius you looked
+// at and then changed would defeat the point of showing it.
+['r-name','r-mode','r-groups','r-labels','r-projects-wrap','r-entitlements-wrap'].forEach(id => {
+  document.getElementById(id).addEventListener('input', invalidatePreview);
+  document.getElementById(id).addEventListener('change', invalidatePreview);
+});
+
+function invalidatePreview() {
+  previewedRule = null;
+  document.getElementById('btn-rule-save').disabled = true;
+  document.getElementById('rule-preview').style.display = 'none';
+}
+
+function collectRule() {
+  const checked = kind => [...document.querySelectorAll(`.picker input[data-kind="${kind}"]:checked`)]
+    .map(i => ({ [kind === 'group' ? 'id' : 'slug']: kind === 'group' ? Number(i.value) : i.value, name: i.dataset.name }));
+  return {
+    name: document.getElementById('r-name').value.trim(),
+    match: { mode: document.getElementById('r-mode').value, groups: checked('group'), labels: checked('label') },
+    grant: { projects: tagState['r-projects'], entitlements: tagState['r-entitlements'] },
+  };
+}
+
+document.getElementById('btn-rule-preview').addEventListener('click', async () => {
+  const msg = document.getElementById('rule-msg');
+  const out = document.getElementById('rule-preview');
+  msg.className = 'msg'; msg.textContent = 'Evaluating…';
+  try {
+    const draft = collectRule();
+    const r = await api('/auth/rules/preview', { method: 'POST', body: draft });
+    previewedRule = draft;
+    document.getElementById('btn-rule-save').disabled = false;
+    msg.textContent = '';
+
+    const rows = r.affected.map(a => `<div style="padding:5px 0;font-size:12px;border-bottom:1px solid var(--card-border)">
+        ${escHtml(a.name || a.email || a.personId)}
+        ${a.redundant
+          ? '<span class="badge badge-off" style="margin-left:8px">already had it</span>'
+          : `<span class="badge badge-approved" style="margin-left:8px">gains ${escHtml([...a.newProjects, ...a.newEntitlements].join(', '))}</span>`}
+      </div>`).join('');
+
+    // The two numbers side by side are the whole safety argument: a bonds group
+    // of thousands and an akn ID population of a handful are not the same
+    // thing, and only people who exist here AND are linked can be touched.
+    out.style.display = '';
+    out.innerHTML = `
+      <div class="readonly-box">
+        <div style="font-size:13px;margin-bottom:8px">
+          Matches <strong>${r.matched}</strong> of ${r.people.total} people ·
+          grants new access to <strong>${r.grantsNewAccessTo}</strong>
+        </div>
+        <div class="hint" style="margin:0 0 10px">
+          ${r.people.linkedToBonds} of ${r.people.total} people are linked to bonds.
+          ${r.people.linkedToBonds === 0 ? 'Nothing can match until people are linked.' : 'Unlinked people can never match a rule.'}
+        </div>
+        ${rows || '<div style="font-size:12px;color:var(--text-muted)">Nobody matches.</div>'}
+      </div>`;
+  } catch (e) {
+    invalidatePreview();
+    msg.className = 'msg msg-err'; msg.textContent = e.message;
+  }
+});
+
+document.getElementById('btn-rule-save').addEventListener('click', async () => {
+  if (!previewedRule) return;
+  const msg = document.getElementById('rule-msg');
+  try {
+    await api('/auth/rules', { method: 'POST', body: previewedRule });
+    msg.className = 'msg msg-ok'; msg.textContent = 'Rule saved';
+    document.getElementById('r-name').value = '';
+    document.querySelectorAll('.picker input:checked').forEach(i => { i.checked = false; });
+    tagState['r-projects'] = []; renderTagWrap('r-projects');
+    tagState['r-entitlements'] = []; renderTagWrap('r-entitlements');
+    invalidatePreview();
+    loadRules();
+  } catch (e) { msg.className = 'msg msg-err'; msg.textContent = e.message; }
+});
+
+async function loadRules() {
+  const el = document.getElementById('rules-list');
+  try {
+    const { rules } = await api('/auth/rules');
+    if (!rules.length) {
+      el.innerHTML = '<div class="empty">No rules. Access is granted by hand on each person.</div>';
+      return;
+    }
+    el.innerHTML = rules.map(r => {
+      const match = [
+        ...(r.match?.groups || []).map(g => g.name || `group ${g.id}`),
+        ...(r.match?.labels || []).map(l => l.name || l.slug),
+      ].join(r.match?.mode === 'all' ? ' AND ' : ' OR ');
+      const grants = [...(r.grant?.projects || []), ...(r.grant?.entitlements || [])].join(', ');
+      const on = r.enabled !== false;
+      return `<div class="rule-row">
+        <div class="rule-head">
+          <span class="rule-name">${escHtml(r.name)}</span>
+          <span class="badge ${on ? 'badge-approved' : 'badge-off'}">${on ? 'enabled' : 'disabled'}</span>
+          <button class="btn" onclick="toggleRule('${escHtml(r.id)}',${!on})">${on ? 'Disable' : 'Enable'}</button>
+          <button class="btn btn-danger" onclick="deleteRule('${escHtml(r.id)}','${escHtml(r.name)}')">Delete</button>
+        </div>
+        <div class="rule-body">${escHtml(match || 'no match')} → ${escHtml(grants || 'nothing')}</div>
+      </div>`;
+    }).join('');
+  } catch (e) { el.innerHTML = `<div class="empty">Error: ${escHtml(e.message)}</div>`; }
+}
+
+window.toggleRule = async (ruleId, enabled) => {
+  try { await api(`/auth/rules/${ruleId}`, { method: 'PATCH', body: { enabled } }); loadRules(); }
+  catch (e) { alert(e.message); }
+};
+
+window.deleteRule = async (ruleId, name) => {
+  // Safe to state this plainly: derived grants are computed at read time and
+  // never written onto a person, so deleting a rule withdraws exactly what it
+  // granted and strands nothing.
+  if (!confirm(`Delete "${name}"?\n\nAnyone whose access came only from this rule loses it. Explicit grants are untouched.`)) return;
+  try { await api(`/auth/rules/${ruleId}`, { method: 'DELETE' }); loadRules(); }
+  catch (e) { alert(e.message); }
+};
 
 // Sign out
 document.getElementById('btn-signout').addEventListener('click', async () => {

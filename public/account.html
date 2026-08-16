@@ -5,67 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Account — akn.id</title>
 <link rel="icon" href="https://akn.me.uk/favicon.ico">
+<link rel="stylesheet" href="/akn.css">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
-  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
-  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
-  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
-  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3);
-}
-html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
-.blob { position: fixed; border-radius: 100px; filter: blur(80px); opacity: 0.12; z-index: 0; pointer-events: none; }
-.blob-1 { background: linear-gradient(135deg,#667eea,#764ba2); top:5%; right:5%; width:380px; height:380px; animation: b1 20s ease-in-out infinite; }
-.blob-2 { background: linear-gradient(135deg,#f093fb,#f5576c); bottom:10%; left:5%; width:300px; height:300px; animation: b2 18s ease-in-out infinite 3s; }
-@keyframes b1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-25px)} }
-@keyframes b2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
-.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; background: linear-gradient(to bottom, var(--bg) 60%, transparent); }
-.wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
-.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
-.topbar-right { display: flex; align-items: center; gap: 16px; }
-.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); object-fit: cover; }
-.avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--btn-bg); border: 1px solid var(--btn-border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--btn-color); }
-.signout-btn { font-size: 12px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
-.signout-btn:hover { color: var(--text); }
-.page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 96px 24px 60px; }
-h1 { font-size: 1.3rem; font-weight: 500; margin-bottom: 4px; }
-.page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 40px; }
-.section { margin-bottom: 32px; }
-.section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
-.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; }
-input, textarea, select {
-  width: 100%; background: var(--input-bg); border: 1px solid var(--input-border);
-  border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 13px;
-  font-family: inherit; outline: none; transition: border-color 0.2s;
-}
-textarea { resize: none; height: 70px; }
-input:focus, textarea:focus { border-color: var(--input-focus); }
-input::placeholder, textarea::placeholder { color: var(--text-muted); }
-input[readonly] { opacity: 0.5; cursor: not-allowed; }
-.btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 9px; padding: 9px 18px; font-size: 13px; font-family: inherit; cursor: pointer; transition: background 0.2s; letter-spacing: 0.01em; }
-.btn:hover { background: rgba(167,139,250,0.25); }
-.btn:disabled { opacity: 0.4; cursor: default; }
-.btn-danger { background: rgba(252,165,165,0.1); color: #fca5a5; border-color: rgba(252,165,165,0.25); }
-.btn-danger:hover { background: rgba(252,165,165,0.18); }
+/* Page-specific only. Tokens, shell, cards, fields, buttons and badges all come
+   from akn.css, which holds the same values this file used to declare inline. */
 .provider-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--card-border); }
 .provider-row:last-child { border-bottom: none; padding-bottom: 0; }
 .provider-info { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .provider-dot { width: 8px; height: 8px; border-radius: 50%; }
 .dot-linked { background: #6ee7b7; }
 .dot-unlinked { background: var(--card-border); }
-.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
-.badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
-.badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
-.project-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-muted); margin: 4px; }
-.save-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
-.save-msg { font-size: 12px; color: #6ee7b7; }
-.loading { text-align: center; padding: 60px; color: var(--text-muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -73,10 +22,17 @@ input[readonly] { opacity: 0.5; cursor: not-allowed; }
 <div class="blob blob-2"></div>
 
 <div class="topbar">
-  <a class="wordmark" href="https://akn.me.uk">
-    <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
-    <span>akn.id</span>
-  </a>
+  <div class="topbar-left">
+    <a class="wordmark" href="https://akn.me.uk">
+      <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
+      <span>akn.id</span>
+    </a>
+    <nav class="nav">
+      <a href="/account" aria-current="page">Account</a>
+      <a href="/card">Card</a>
+      <a href="/admin" id="nav-admin" hidden>Admin</a>
+    </nav>
+  </div>
   <div class="topbar-right">
     <div id="avatar-wrap"></div>
     <button class="signout-btn" id="btn-signout">Sign Out</button>
@@ -93,7 +49,6 @@ input[readonly] { opacity: 0.5; cursor: not-allowed; }
     <div class="card">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
         <span id="status-badge" class="badge"></span>
-        <span id="admin-link-wrap"></span>
       </div>
       <div id="projects-wrap">
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Projects</div>
@@ -291,9 +246,10 @@ onAuthStateChanged(auth, async user => {
   badge.textContent = data.status || 'pending';
   badge.className = `badge badge-${data.status === 'approved' ? 'approved' : 'pending'}`;
 
-  // Admin link
+  // Admin link. It lives in the nav now rather than inline beside the status
+  // badge, so it sits in the same place on every page instead of only this one.
   if (data.role === 'admin') {
-    document.getElementById('admin-link-wrap').innerHTML = '<a href="/admin.html" style="font-size:12px;color:var(--btn-color);text-decoration:none">Admin Panel →</a>';
+    document.getElementById('nav-admin').hidden = false;
   }
 
   // Projects
