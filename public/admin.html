@@ -5,20 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin — akn.id</title>
 <link rel="icon" href="https://akn.me.uk/favicon.ico">
+<link rel="stylesheet" href="/akn.css">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
-  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
-  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
-  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
-  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3);
-}
-html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+/* Page-specific. The shared tokens and shell come from akn.css; the admin
+   panel keeps its own denser .btn, .card and .page because it is a table
+   view, not a form page, and those differences are deliberate. */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid var(--card-border); }
-.wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; }
-.wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
-.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
 .topbar-right { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--text-muted); }
 .topbar-right a { color: var(--btn-color); text-decoration: none; }
 .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
@@ -29,7 +21,6 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .tab.active { color: var(--btn-color); border-bottom-color: var(--btn-color); }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
-.section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
 .person-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; cursor: pointer; transition: background 0.15s; }
 .person-row:last-child { border-bottom: none; }
 .person-row:hover { background: rgba(255,255,255,0.02); }
@@ -40,9 +31,6 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .person-email { font-size: 12px; color: var(--text-muted); }
 .person-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
-.badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
-.badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
 .badge-rejected { background: rgba(252,165,165,0.1); color: #fca5a5; border: 1px solid rgba(252,165,165,0.2); }
 .badge-admin { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
 .btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 7px; padding: 5px 12px; font-size: 12px; font-family: inherit; cursor: pointer; transition: background 0.2s; }
@@ -56,11 +44,8 @@ h1 { font-size: 1.2rem; font-weight: 500; margin-bottom: 4px; }
 .btn-danger:hover { background: rgba(252,165,165,0.15); }
 .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; overflow: hidden; }
 .empty { padding: 32px; text-align: center; font-size: 13px; color: var(--text-muted); }
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; }
 input, select { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s; }
 input:focus, select:focus { border-color: var(--input-focus); }
-input::placeholder { color: var(--text-muted); }
 .create-form { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
@@ -122,13 +107,19 @@ input::placeholder { color: var(--text-muted); }
 </head>
 <body>
 <div class="topbar">
-  <a class="wordmark" href="https://akn.me.uk">
-    <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
-    <span>akn.id / admin</span>
-  </a>
+  <div class="topbar-left">
+    <a class="wordmark" href="https://akn.me.uk">
+      <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
+      <span>akn.id</span>
+    </a>
+    <nav class="nav">
+      <a href="/account">Account</a>
+      <a href="/card">Card</a>
+      <a href="/admin" aria-current="page">Admin</a>
+    </nav>
+  </div>
   <div class="topbar-right">
     <span id="admin-name"></span>
-    <a href="/account">My Account</a>
     <button id="btn-signout" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;color:var(--text-muted)">Sign Out</button>
   </div>
 </div>

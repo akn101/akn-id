@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Card — akn.id</title>
+<link rel="icon" href="https://akn.me.uk/favicon.ico">
+<link rel="stylesheet" href="/akn.css">
+<style>
+/* Page-specific only. Everything else comes from akn.css. */
+.intro { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
+.empty { text-align: center; padding: 8px 0 4px; }
+.empty p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 18px; }
+.denied { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <a class="wordmark" href="https://akn.me.uk">
+      <img src="https://akn.me.uk/android-chrome-192x192.png" alt="">
+      <span>akn.id</span>
+    </a>
+    <nav class="nav">
+      <a href="/account">Account</a>
+      <a href="/card" aria-current="page">Card</a>
+      <a href="/admin" id="nav-admin" hidden>Admin</a>
+    </nav>
+  </div>
+  <div class="topbar-right">
+    <button class="signout-btn" id="btn-signout">Sign Out</button>
+  </div>
+</div>
+
+<div class="page" id="page" hidden>
+  <h1>My Card</h1>
+  <div class="page-sub" id="sub"></div>
+
+  <!-- No card yet -->
+  <div class="section" id="empty-section" hidden>
+    <div class="card empty">
+      <p id="empty-msg"></p>
+      <button class="btn" id="btn-create">Create my card</button>
+    </div>
+  </div>
+
+  <!-- Not allowed -->
+  <div class="section" id="denied-section" hidden>
+    <div class="card"><div class="denied" id="denied-msg"></div></div>
+  </div>
+
+  <!-- The card -->
+  <div id="card-form" hidden>
+    <div class="section">
+      <div class="section-title">Name</div>
+      <div class="card">
+        <div class="field-row">
+          <div class="field"><label>First name</label><input type="text" id="f-first_name" /></div>
+          <div class="field"><label>Last name</label><input type="text" id="f-last_name" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Middle name</label><input type="text" id="f-middle_name" /></div>
+          <div class="field"><label>Nickname</label><input type="text" id="f-nickname" placeholder="What people call you" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Prefix</label><input type="text" id="f-prefix" placeholder="Dr, Mx…" /></div>
+          <div class="field"><label>Suffix</label><input type="text" id="f-suffix" placeholder="Jr, PhD…" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">How to reach you</div>
+      <div class="card">
+        <div class="field">
+          <label>Email</label>
+          <div class="readonly-box" id="v-email">—</div>
+          <div class="hint">
+            This is the address your akn ID account is matched on, so it is changed
+            by an admin rather than here — if two people could claim the same
+            address, sign-ins would start resolving to the wrong person.
+          </div>
+        </div>
+        <div class="field"><label>Phone</label><input type="tel" id="c-phone" placeholder="+44 7700 000000" /></div>
+        <div class="field-row">
+          <div class="field"><label>LinkedIn</label><input type="text" id="c-linkedin" placeholder="profile URL or handle" /></div>
+          <div class="field"><label>Instagram</label><input type="text" id="c-instagram" placeholder="@username" /></div>
+        </div>
+        <div class="hint" id="extra-hint" hidden></div>
+      </div>
+    </div>
+
+    <div class="save-row">
+      <button class="btn" id="btn-save">Save</button>
+      <span class="save-msg" id="save-msg"></span>
+    </div>
+  </div>
+</div>
+
+<div class="loading" id="loading">Loading…</div>
+
+<script type="module">
+const API = 'https://api.akn.me.uk';
+
+const $ = id => document.getElementById(id);
+const FIELDS = ['first_name', 'last_name', 'middle_name', 'nickname', 'prefix', 'suffix'];
+const CHANNELS = ['phone', 'linkedin', 'instagram'];
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || body.message || res.statusText);
+  return body;
+}
+
+function show(id, on = true) { $(id).hidden = !on; }
+
+function say(msg, isError = false) {
+  const el = $('save-msg');
+  el.textContent = msg;
+  el.classList.toggle('error', isError);
+  if (msg && !isError) setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3000);
+}
+
+function render(card) {
+  show('empty-section', false);
+  show('denied-section', false);
+  show('card-form', true);
+
+  for (const f of FIELDS) $(`f-${f}`).value = card.fields?.[f] ?? '';
+  for (const c of CHANNELS) $(`c-${c}`).value = card.channels?.[c]?.value ?? '';
+  $('v-email').textContent = card.email || 'none on record';
+
+  // bonds allows several rows per channel; this form shows one. Say so rather
+  // than letting a save look like it silently dropped the others.
+  if (card.extraRows > 0) {
+    $('extra-hint').textContent =
+      `Your card has ${card.extraRows} further contact ${card.extraRows === 1 ? 'entry' : 'entries'} ` +
+      'not shown here. They are left untouched when you save.';
+    show('extra-hint', true);
+  } else {
+    show('extra-hint', false);
+  }
+}
+
+function renderEmpty(state) {
+  show('card-form', false);
+  if (state.canCreate) {
+    show('denied-section', false);
+    $('empty-msg').textContent =
+      'You do not have a card yet. Creating one adds you to the directory so other '
+      + 'members can find you. You can edit or empty it at any time.';
+    show('empty-section', true);
+  } else {
+    show('empty-section', false);
+    $('denied-msg').textContent = state.reason
+      ? `You do not have a card, and one cannot be created here: ${state.reason}.`
+      : 'You do not have a card, and self-service cards are not enabled.';
+    show('denied-section', true);
+  }
+}
+
+async function load() {
+  const state = await api('/auth/me/card');
+  $('sub').textContent = state.linked
+    ? 'Your entry in the directory. Only you and an admin can change it.'
+    : 'Your entry in the directory.';
+  if (state.linked) render(state); else renderEmpty(state);
+}
+
+$('btn-create').addEventListener('click', async () => {
+  $('btn-create').disabled = true;
+  try {
+    render(await api('/auth/me/card', { method: 'POST' }));
+    say('Card created');
+  } catch (e) {
+    $('denied-msg').textContent = e.message;
+    show('denied-section', true);
+  } finally {
+    $('btn-create').disabled = false;
+  }
+});
+
+$('btn-save').addEventListener('click', async () => {
+  $('btn-save').disabled = true;
+  say('');
+  try {
+    const fields = Object.fromEntries(FIELDS.map(f => [f, $(`f-${f}`).value.trim()]));
+    const channels = Object.fromEntries(CHANNELS.map(c => [c, $(`c-${c}`).value.trim()]));
+    render(await api('/auth/me/card', { method: 'PATCH', body: { fields, channels } }));
+    say('Saved');
+  } catch (e) {
+    say(e.message, true);
+  } finally {
+    $('btn-save').disabled = false;
+  }
+});
+
+$('btn-signout').addEventListener('click', async () => {
+  await fetch(API + '/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+  location.href = '/';
+});
+
+(async function init() {
+  try {
+    const session = await api('/auth/session/refresh', { method: 'POST' });
+    if (!session.authenticated) throw new Error('not authenticated');
+    if (session.role === 'admin' || session.projects?.includes('*')) {
+      $('nav-admin').hidden = false;
+    }
+    await load();
+    show('loading', false);
+    show('page', true);
+  } catch {
+    // Any failure to establish who this is sends them to the front door rather
+    // than showing an empty form they cannot save.
+    location.href = '/';
+  }
+})();
+</script>
+</body>
+</html>

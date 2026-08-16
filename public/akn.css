@@ -1,0 +1,129 @@
+/* akn ID design system.
+ *
+ * These values were already the design system — they were just written out
+ * three times, once per page, and had begun to drift. admin.html had picked up
+ * a light-theme panel (#f8f9fa on #0c0c14) and #666 labels that existed nowhere
+ * else, which is the failure mode of a system that lives in triplicate: nothing
+ * is wrong until you look at two pages side by side.
+ *
+ * Nothing here is new. Every token, radius, timing and colour is the value the
+ * pages already shipped. The change is that there is now one copy.
+ *
+ * Page-specific styling stays in the page. This file is only what more than one
+ * page needs.
+ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0c0c14; --text: rgba(255,255,255,0.85); --text-muted: rgba(255,255,255,0.32);
+  --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.08);
+  --input-bg: rgba(255,255,255,0.05); --input-border: rgba(255,255,255,0.1);
+  --input-focus: rgba(167,139,250,0.45); --btn-bg: rgba(167,139,250,0.15);
+  --btn-color: #a78bfa; --btn-border: rgba(167,139,250,0.3);
+}
+
+html, body {
+  min-height: 100%; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Ambient background ------------------------------------------------------- */
+
+.blob { position: fixed; border-radius: 100px; filter: blur(80px); opacity: 0.12; z-index: 0; pointer-events: none; }
+.blob-1 { background: linear-gradient(135deg,#667eea,#764ba2); top:5%; right:5%; width:380px; height:380px; animation: b1 20s ease-in-out infinite; }
+.blob-2 { background: linear-gradient(135deg,#f093fb,#f5576c); bottom:10%; left:5%; width:300px; height:300px; animation: b2 18s ease-in-out infinite 3s; }
+@keyframes b1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-25px)} }
+@keyframes b2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
+
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}
+
+/* Shell -------------------------------------------------------------------- */
+
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 32px;
+  background: linear-gradient(to bottom, var(--bg) 60%, transparent);
+}
+.topbar-left { display: flex; align-items: center; gap: 24px; min-width: 0; }
+.wordmark { display: flex; align-items: center; gap: 9px; text-decoration: none; flex-shrink: 0; }
+.wordmark img { width: 20px; height: 20px; opacity: 0.5; filter: invert(1); }
+.wordmark span { font-size: 13px; color: var(--text-muted); letter-spacing: 0.05em; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+
+/* Nav. Previously there was none: /account linked to /admin and nothing linked
+ * back, so the only route between pages was the URL bar. */
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav a {
+  font-size: 13px; color: var(--text-muted); text-decoration: none;
+  padding: 5px 11px; border-radius: 8px; transition: color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+.nav a:hover { color: var(--text); background: var(--card-bg); }
+.nav a[aria-current="page"] { color: var(--btn-color); background: var(--btn-bg); }
+@media (max-width: 560px) {
+  .topbar { padding: 16px 18px; }
+  .topbar-left { gap: 14px; }
+  .wordmark span { display: none; }
+  .nav a { padding: 5px 8px; }
+}
+
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--card-border); object-fit: cover; }
+.avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--btn-bg); border: 1px solid var(--btn-border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--btn-color); }
+.signout-btn { font-size: 12px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+.signout-btn:hover { color: var(--text); }
+
+.page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 96px 24px 60px; }
+h1 { font-size: 1.3rem; font-weight: 500; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 40px; }
+
+/* Content ------------------------------------------------------------------ */
+
+.section { margin-bottom: 32px; }
+.section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; }
+
+input, textarea, select {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--input-border);
+  border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: 13px;
+  font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+textarea { resize: none; height: 70px; }
+input:focus, textarea:focus, select:focus { border-color: var(--input-focus); }
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
+input[readonly] { opacity: 0.5; cursor: not-allowed; }
+
+.btn { background: var(--btn-bg); color: var(--btn-color); border: 1px solid var(--btn-border); border-radius: 9px; padding: 9px 18px; font-size: 13px; font-family: inherit; cursor: pointer; transition: background 0.2s; letter-spacing: 0.01em; }
+.btn:hover { background: rgba(167,139,250,0.25); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn-danger { background: rgba(252,165,165,0.1); color: #fca5a5; border-color: rgba(252,165,165,0.25); }
+.btn-danger:hover { background: rgba(252,165,165,0.18); }
+
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.badge-approved { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
+.badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+
+.project-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-muted); margin: 4px; }
+
+.save-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.save-msg { font-size: 12px; color: #6ee7b7; }
+.save-msg.error { color: #fca5a5; }
+.loading { text-align: center; padding: 60px; color: var(--text-muted); font-size: 13px; }
+
+/* A note attached to a control explaining a constraint, rather than a tooltip
+ * that has to be hunted for. Used where a field is deliberately not editable. */
+.hint { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-top: 6px; }
+
+/* Shown, not editable. Dashed rather than solid so it does not read as an empty
+   input someone can click into — the same convention the admin panel uses for
+   affiliations, which are also facts rather than decisions. */
+.readonly-box { background: rgba(255,255,255,0.02); border: 1px dashed var(--card-border); border-radius: 9px; padding: 10px 12px; font-size: 13px; color: var(--text-muted); }
