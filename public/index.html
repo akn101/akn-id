@@ -258,6 +258,7 @@ function projectFor(dest) {
     const subdomain = new URL(dest).hostname.split('.')[0];
     if (subdomain === 'startpage') return 'startpage';
     if (subdomain === 'thoughts') return 'thoughts';
+    if (subdomain === 'docs' || subdomain === 'docs-next') return 'docs';
     if (subdomain === 'cloud' || subdomain === 'casanova') return 'nextcloud';
     if (['halcyon', 'www', 'akn'].includes(subdomain)) return 'halcyon';
   } catch {}
